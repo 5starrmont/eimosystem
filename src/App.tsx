@@ -10,9 +10,19 @@ import Houses from "./pages/Houses";
 import Tenants from "./pages/Tenants";
 import Payments from "./pages/Payments";
 import NotFound from "./pages/NotFound";
+import { currentUser } from "./utils/mockData";
 
 // Create React Query client
 const queryClient = new QueryClient();
+
+// Role-based redirect
+const RoleBasedRedirect = () => {
+  // Redirect to appropriate page based on user role
+  if (currentUser) {
+    return <Navigate to="/dashboard" />;
+  }
+  return <Navigate to="/" />;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

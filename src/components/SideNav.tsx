@@ -10,7 +10,8 @@ import {
   Settings, 
   LogOut,
   User,
-  Menu
+  Menu,
+  Shield
 } from "lucide-react";
 import { currentUser } from "@/utils/mockData";
 import { useState } from "react";
@@ -64,6 +65,14 @@ const filteredLinks = navLinks.filter(link =>
   link.roles.includes(currentUser.role)
 );
 
+// Portal names based on role
+const portalNames = {
+  admin: "Admin Portal",
+  landlord: "Landlord Portal",
+  caretaker: "Caretaker Portal", 
+  tenant: "Tenant Portal"
+};
+
 const SideNav = ({ className }: SideNavProps) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(true);
@@ -94,6 +103,18 @@ const SideNav = ({ className }: SideNavProps) => {
           <h1 className="text-xl font-bold tracking-tight text-white">
             EIMO <span className="text-accent">INVESTMENTS</span>
           </h1>
+          <div className="mt-2 flex items-center">
+            <div className="h-6 w-6 rounded-full bg-sidebar-accent flex items-center justify-center flex-shrink-0 mr-2">
+              {currentUser.role === "admin" ? (
+                <Shield className="h-3 w-3" />
+              ) : (
+                <User className="h-3 w-3" />
+              )}
+            </div>
+            <p className="text-sm font-medium text-sidebar-foreground/90">
+              {portalNames[currentUser.role]}
+            </p>
+          </div>
         </div>
         
         {/* Navigation */}
