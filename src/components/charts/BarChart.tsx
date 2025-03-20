@@ -43,6 +43,26 @@ export const BarChart = ({
     {}
   );
 
+  // Create a custom tooltip component that adheres to the expected types
+  const CustomTooltip = React.useCallback(
+    (props: TooltipProps<number, string>) => {
+      if (!props.active || !props.payload) {
+        return null;
+      }
+      
+      return (
+        <ChartTooltipContent
+          {...props}
+          formatter={(value: any, name: any) => [
+            valueFormatter(value as number),
+            name as string,
+          ]}
+        />
+      );
+    },
+    [valueFormatter]
+  );
+
   return (
     <ChartContainer config={config}>
       <RechartsBarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
@@ -50,22 +70,7 @@ export const BarChart = ({
         <XAxis dataKey={index} />
         <YAxis />
         {customTooltip ? (
-          <Tooltip 
-            content={(props) => {
-              if (!props.active || !props.payload) {
-                return null;
-              }
-              return (
-                <ChartTooltipContent
-                  {...props}
-                  formatter={(value: any, name: any) => [
-                    valueFormatter(value as number),
-                    name as string,
-                  ]}
-                />
-              );
-            }}
-          />
+          <Tooltip content={CustomTooltip} />
         ) : (
           <Tooltip />
         )}
