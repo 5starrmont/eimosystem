@@ -2,7 +2,6 @@
 import { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import SideNav from "./SideNav";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface LayoutProps {
   children: ReactNode;
@@ -10,8 +9,6 @@ interface LayoutProps {
 }
 
 const Layout = ({ children, className }: LayoutProps) => {
-  const isMobile = useIsMobile();
-  
   return (
     <div className="h-full flex">
       <SideNav />
@@ -19,7 +16,6 @@ const Layout = ({ children, className }: LayoutProps) => {
       <main 
         className={cn(
           "flex-1 transition-all duration-300 ease-in-out overflow-auto",
-          isMobile ? "ml-0" : "ml-16 md:ml-16",
           className
         )}
       >
