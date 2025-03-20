@@ -43,27 +43,29 @@ export const BarChart = ({
     {}
   );
 
+  const renderTooltipContent = (props: TooltipProps<number, string>) => {
+    return (
+      <ChartTooltipContent
+        {...props}
+        formatter={(value, name) => [
+          valueFormatter(value as number),
+          name as string,
+        ]}
+      />
+    );
+  };
+
   return (
     <ChartContainer config={config}>
       <RechartsBarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey={index} />
         <YAxis />
-        <Tooltip
-          content={
-            customTooltip
-              ? (props) => (
-                  <ChartTooltipContent
-                    {...props as TooltipProps<any, any>}
-                    formatter={(value, name) => [
-                      valueFormatter(value as number),
-                      name as string,
-                    ]}
-                  />
-                )
-              : undefined
-          }
-        />
+        {customTooltip ? (
+          <Tooltip content={renderTooltipContent} />
+        ) : (
+          <Tooltip />
+        )}
         {categories.map((category, i) => (
           <Bar
             key={category}
