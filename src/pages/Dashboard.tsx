@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { mockDashboard, mockPayments, mockHouses, mockTenants, mockNotifications } from "@/utils/mockData";
 import NotificationCard from "@/components/NotificationCard";
-import { BarChart } from "@/components/ui/chart";
+import { BarChart } from "@/components/charts/BarChart";
 import { format } from "date-fns";
 
 const Dashboard = () => {
