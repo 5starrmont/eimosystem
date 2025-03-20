@@ -24,6 +24,22 @@ interface BarChartProps {
   customTooltip?: boolean;
 }
 
+// Create a custom tooltip component with explicit typings
+const CustomTooltip = ({ active, payload, label, formatter }: any) => {
+  if (!active || !payload || !payload.length) {
+    return null;
+  }
+  
+  return (
+    <ChartTooltipContent
+      active={active}
+      payload={payload}
+      label={label}
+      formatter={formatter}
+    />
+  );
+};
+
 export const BarChart = ({
   data,
   index,
@@ -43,25 +59,10 @@ export const BarChart = ({
     {}
   );
 
-  // Define a tooltip content renderer that is type-compatible with recharts
-  const renderTooltipContent = React.useCallback(
-    (props: any) => {
-      if (!props.active || !props.payload) {
-        return null;
-      }
-      
-      return (
-        <ChartTooltipContent
-          {...props}
-          formatter={(value: any, name: any) => [
-            valueFormatter(value as number),
-            name as string,
-          ]}
-        />
-      );
-    },
-    [valueFormatter]
-  );
+  // Custom formatter function for the tooltip
+  const formatter = (value: number, name: string) => {
+    return [valueFormatter(value), name];
+  };
 
   return (
     <ChartContainer config={config}>
@@ -70,7 +71,7 @@ export const BarChart = ({
         <XAxis dataKey={index} />
         <YAxis />
         {customTooltip ? (
-          <Tooltip content={renderTooltipContent} />
+          <Tooltip content={(props) => <CustomTooltip {...props} formatter={formatter} />} />
         ) : (
           <Tooltip />
         )}
