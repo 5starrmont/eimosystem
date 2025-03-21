@@ -14,56 +14,11 @@ import {
   Shield
 } from "lucide-react";
 import { currentUser } from "@/utils/mockData";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface SideNavProps {
   className?: string;
 }
-
-// Sidebar navigation links based on user role
-const navLinks = [
-  {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: <HomeIcon className="h-5 w-5" />,
-    roles: ["admin", "landlord", "caretaker", "tenant"],
-  },
-  {
-    title: "Properties",
-    href: "/houses",
-    icon: <Building2 className="h-5 w-5" />,
-    roles: ["admin", "landlord", "caretaker"],
-  },
-  {
-    title: "Tenants",
-    href: "/tenants",
-    icon: <Users className="h-5 w-5" />,
-    roles: ["admin", "landlord", "caretaker"],
-  },
-  {
-    title: "Payments",
-    href: "/payments",
-    icon: <CreditCard className="h-5 w-5" />,
-    roles: ["admin", "landlord", "tenant"],
-  },
-  {
-    title: "Notifications",
-    href: "/notifications",
-    icon: <Bell className="h-5 w-5" />,
-    roles: ["admin", "landlord", "caretaker", "tenant"],
-  },
-  {
-    title: "Settings",
-    href: "/settings",
-    icon: <Settings className="h-5 w-5" />,
-    roles: ["admin", "landlord"],
-  },
-];
-
-// Filter links based on user role
-const filteredLinks = navLinks.filter(link => 
-  link.roles.includes(currentUser.role)
-);
 
 // Portal names based on role
 const portalNames = {
@@ -76,10 +31,75 @@ const portalNames = {
 const SideNav = ({ className }: SideNavProps) => {
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(true);
+  const [userRole, setUserRole] = useState(currentUser.role);
+  
+  // Read user role from localStorage on component mount and when it changes
+  useEffect(() => {
+    // Initial read from localStorage
+    const storedRole = localStorage.getItem('userRole');
+    if (storedRole) {
+      setUserRole(storedRole as any);
+    }
+    
+    // Listen for storage changes
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'userRole' && event.newValue) {
+        setUserRole(event.newValue as any);
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
   
   const toggleSidebar = () => {
     setIsOpen(!isOpen);
   };
+
+  // Sidebar navigation links based on user role
+  const navLinks = [
+    {
+      title: "Dashboard",
+      href: "/dashboard",
+      icon: <HomeIcon className="h-5 w-5" />,
+      roles: ["admin", "landlord", "caretaker", "tenant"],
+    },
+    {
+      title: "Properties",
+      href: "/houses",
+      icon: <Building2 className="h-5 w-5" />,
+      roles: ["admin", "landlord", "caretaker"],
+    },
+    {
+      title: "Tenants",
+      href: "/tenants",
+      icon: <Users className="h-5 w-5" />,
+      roles: ["admin", "landlord", "caretaker"],
+    },
+    {
+      title: "Payments",
+      href: "/payments",
+      icon: <CreditCard className="h-5 w-5" />,
+      roles: ["admin", "landlord", "tenant"],
+    },
+    {
+      title: "Notifications",
+      href: "/notifications",
+      icon: <Bell className="h-5 w-5" />,
+      roles: ["admin", "landlord", "caretaker", "tenant"],
+    },
+    {
+      title: "Settings",
+      href: "/settings",
+      icon: <Settings className="h-5 w-5" />,
+      roles: ["admin", "landlord"],
+    },
+  ];
+
+  // Filter links based on current user role from state
+  const filteredLinks = navLinks.filter(link => 
+    link.roles.includes(userRole)
+  );
 
   return (
     <>
@@ -105,14 +125,14 @@ const SideNav = ({ className }: SideNavProps) => {
           </h1>
           <div className="mt-2 flex items-center">
             <div className="h-6 w-6 rounded-full bg-sidebar-accent flex items-center justify-center flex-shrink-0 mr-2">
-              {currentUser.role === "admin" ? (
+              {userRole === "admin" ? (
                 <Shield className="h-3 w-3" />
               ) : (
                 <User className="h-3 w-3" />
               )}
             </div>
             <p className="text-sm font-medium text-sidebar-foreground/90">
-              {portalNames[currentUser.role]}
+              {portalNames[userRole]}
             </p>
           </div>
         </div>
@@ -147,7 +167,7 @@ const SideNav = ({ className }: SideNavProps) => {
             
             <div className="ml-3 overflow-hidden">
               <p className="text-sm font-medium truncate">{currentUser.name}</p>
-              <p className="text-xs text-sidebar-foreground/70 truncate capitalize">{currentUser.role}</p>
+              <p className="text-xs text-sidebar-foreground/70 truncate capitalize">{userRole}</p>
             </div>
           </div>
           
