@@ -13,8 +13,17 @@ import AdminDashboard from "@/components/dashboards/AdminDashboard";
 const Dashboard = () => {
   const [dashboard, setDashboard] = useState(mockDashboard);
   const [isLoading, setIsLoading] = useState(true);
+  const [userRole, setUserRole] = useState(currentUser.role);
   
   useEffect(() => {
+    // Get role from localStorage and update state
+    const storedRole = localStorage.getItem('userRole');
+    if (storedRole) {
+      setUserRole(storedRole as any);
+      // Update currentUser.role for consistency
+      currentUser.role = storedRole as any;
+    }
+    
     // Simulate loading
     const timer = setTimeout(() => {
       setIsLoading(false);
@@ -54,8 +63,8 @@ const Dashboard = () => {
     water: data.water,
   }));
 
-  // Render different dashboards based on user role
-  switch (currentUser.role) {
+  // Render different dashboards based on user role (using state instead of directly from currentUser)
+  switch (userRole) {
     case 'landlord':
       return (
         <Layout>

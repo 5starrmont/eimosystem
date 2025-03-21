@@ -38,9 +38,21 @@ const App = () => {
   const [, setForceUpdate] = useState({});
   
   useEffect(() => {
+    // Update currentUser role from localStorage when component mounts
+    const storedRole = localStorage.getItem('userRole');
+    if (storedRole) {
+      currentUser.role = storedRole as any;
+    }
+    
     // Listen for storage changes to update the UI
-    const handleStorageChange = () => {
-      setForceUpdate({});
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'userRole') {
+        // Update currentUser.role when userRole changes in localStorage
+        if (event.newValue) {
+          currentUser.role = event.newValue as any;
+        }
+        setForceUpdate({});
+      }
     };
     
     window.addEventListener('storage', handleStorageChange);
