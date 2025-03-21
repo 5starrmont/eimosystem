@@ -17,16 +17,31 @@ const Index = () => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login
+    // Simulate login with role-based redirection
     setTimeout(() => {
       setIsLoading(false);
       
       // Just for demo
       if (email.includes('@eimoinvestments.com')) {
+        let role = 'landlord'; // Default role
+        
+        // Determine role based on email
+        if (email.startsWith('tenant')) {
+          role = 'tenant';
+        } else if (email.startsWith('caretaker')) {
+          role = 'caretaker';
+        } else if (email.startsWith('admin')) {
+          role = 'admin';
+        }
+        
         toast({
           title: "Login successful",
-          description: "Welcome back to EIMO Investments",
+          description: `Welcome to ${role.charAt(0).toUpperCase() + role.slice(1)} Portal`,
         });
+        
+        // Store the role in localStorage for demo purposes
+        localStorage.setItem('userRole', role);
+        
         navigate('/dashboard');
       } else {
         toast({
@@ -60,17 +75,30 @@ const Index = () => {
           </p>
           
           <div className="space-y-4">
-            {['landlord@eimoinvestments.com', 'caretaker@eimoinvestments.com', 'admin@eimoinvestments.com'].map((account, index) => (
-              <div key={index} className="flex items-center">
-                <span className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center mr-3">
-                  <User className="h-4 w-4" />
-                </span>
-                <div>
-                  <p className="font-medium">{account}</p>
-                  <p className="text-sm opacity-80">Use with password: "password"</p>
-                </div>
+            <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm">
+              <h3 className="text-xl font-semibold mb-3">Demo Accounts</h3>
+              <div className="space-y-4">
+                {[
+                  { email: 'landlord@eimoinvestments.com', role: 'Landlord' },
+                  { email: 'caretaker@eimoinvestments.com', role: 'Caretaker' },
+                  { email: 'tenant@eimoinvestments.com', role: 'Tenant' },
+                  { email: 'admin@eimoinvestments.com', role: 'Admin' }
+                ].map((account, index) => (
+                  <div key={index} className="flex items-center">
+                    <span className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center mr-3">
+                      <User className="h-4 w-4" />
+                    </span>
+                    <div>
+                      <p className="font-medium">{account.email}</p>
+                      <p className="text-sm opacity-80">
+                        <span className="bg-white/20 px-2 py-0.5 rounded text-xs mr-2">{account.role}</span>
+                        Use with password: "password"
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
       </div>
@@ -140,6 +168,32 @@ const Index = () => {
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
+          
+          {/* Mobile Demo Login Buttons */}
+          <div className="md:hidden mt-8 space-y-4">
+            <h3 className="text-center font-medium">Quick Demo Logins</h3>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { email: 'landlord@eimoinvestments.com', role: 'Landlord' },
+                { email: 'caretaker@eimoinvestments.com', role: 'Caretaker' },
+                { email: 'tenant@eimoinvestments.com', role: 'Tenant' },
+                { email: 'admin@eimoinvestments.com', role: 'Admin' }
+              ].map((account, index) => (
+                <Button
+                  key={index}
+                  type="button"
+                  variant="outline"
+                  className="text-xs"
+                  onClick={() => {
+                    setEmail(account.email);
+                    setPassword('password');
+                  }}
+                >
+                  {account.role}
+                </Button>
+              ))}
+            </div>
+          </div>
           
           <div className="mt-8 text-center">
             <p className="text-sm text-eimo-600">
