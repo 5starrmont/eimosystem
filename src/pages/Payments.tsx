@@ -27,11 +27,13 @@ const Payments = () => {
   
   return (
     <Layout>
-      {userRole === 'tenant' ? (
-        <TenantPayments />
-      ) : (
-        <LandlordPayments />
-      )}
+      <div className="container px-4 mx-auto py-6">
+        {userRole === 'tenant' ? (
+          <TenantPayments />
+        ) : (
+          <LandlordPayments />
+        )}
+      </div>
     </Layout>
   );
 };

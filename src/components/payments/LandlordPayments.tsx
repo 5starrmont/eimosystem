@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { mockPayments, mockTenants, mockUsers } from "@/utils/mockData";
 import { Payment } from "@/utils/types";
@@ -43,10 +42,17 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 // Define the form schema with validation
 const paymentFormSchema = z.object({
   tenantId: z.string().min(1, "Tenant selection is required"),
+  totalAmount: z.coerce.number().min(1, "Total amount must be greater than 0"),
   rentAmount: z.coerce.number().min(0, "Rent amount cannot be negative"),
   waterAmount: z.coerce.number().min(0, "Water amount cannot be negative"),
   date: z.string().min(1, "Payment date is required"),
   description: z.string().optional(),
+}).refine(data => {
+  const calculatedTotal = data.rentAmount + data.waterAmount;
+  return calculatedTotal === data.totalAmount;
+}, {
+  message: "Total amount must equal the sum of rent and water amounts",
+  path: ["totalAmount"]
 });
 
 type PaymentFormValues = z.infer<typeof paymentFormSchema>;
@@ -64,12 +70,29 @@ const LandlordPayments = () => {
     resolver: zodResolver(paymentFormSchema),
     defaultValues: {
       tenantId: "",
+      totalAmount: 0,
       rentAmount: 0,
       waterAmount: 0,
       date: format(new Date(), 'yyyy-MM-dd'),
       description: "",
     },
+    mode: "onChange"
   });
+  
+  // Watch rent and water amounts to calculate total
+  const rentAmount = form.watch("rentAmount");
+  const waterAmount = form.watch("waterAmount");
+  
+  // Update total amount when rent or water amounts change
+  const updateTotalAmount = () => {
+    const total = rentAmount + waterAmount;
+    form.setValue("totalAmount", total);
+  };
+  
+  // Recalculate total when rent or water changes
+  form.useEffect(() => {
+    updateTotalAmount();
+  }, [rentAmount, waterAmount]);
   
   // Total completed payments amount
   const totalPaid = payments
@@ -112,26 +135,15 @@ const LandlordPayments = () => {
   
   // Handle form submission
   const onSubmit = (data: PaymentFormValues) => {
-    const totalAmount = data.rentAmount + data.waterAmount;
-    
-    if (totalAmount <= 0) {
-      toast({
-        title: "Error",
-        description: "Total amount must be greater than 0",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     // Create a new payment
     const newPayment: Payment = {
       id: `payment-${Date.now()}`,
       tenantId: data.tenantId,
-      amount: totalAmount,
-      type: 'rent', // Default to rent as the primary payment type
+      amount: data.totalAmount,
+      type: 'rent', // We use 'rent' as the primary payment type since it's a combined payment
       status: 'completed',
       date: data.date,
-      description: data.description || `Rent: KES ${data.rentAmount}, Water: KES ${data.waterAmount}`,
+      description: data.description || `Combined Payment: Rent KES ${data.rentAmount.toLocaleString()}, Water KES ${data.waterAmount.toLocaleString()}`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -146,7 +158,7 @@ const LandlordPayments = () => {
     // Show success toast
     toast({
       title: "Payment Recorded",
-      description: `Payment of KES ${totalAmount.toLocaleString()} recorded successfully.`,
+      description: `Combined payment of KES ${data.totalAmount.toLocaleString()} recorded successfully.`,
     });
   };
   
@@ -155,7 +167,7 @@ const LandlordPayments = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Payments</h1>
-          <p className="text-muted-foreground">Track rent and water bill payments.</p>
+          <p className="text-muted-foreground">Record and manage combined rent and water bill payments.</p>
         </div>
         
         <Dialog open={showPaymentForm} onOpenChange={setShowPaymentForm}>
@@ -167,7 +179,7 @@ const LandlordPayments = () => {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[550px]">
             <DialogHeader>
-              <DialogTitle>Record New Payment</DialogTitle>
+              <DialogTitle>Record New Combined Payment</DialogTitle>
             </DialogHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
@@ -240,6 +252,25 @@ const LandlordPayments = () => {
                 
                 <FormField
                   control={form.control}
+                  name="totalAmount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Total Combined Amount (KES)</FormLabel>
+                      <div className="flex items-center">
+                        <FormControl>
+                          <Input {...field} type="number" readOnly className="bg-muted font-bold" />
+                        </FormControl>
+                      </div>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Combined total is automatically calculated as the sum of rent and water amounts
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
                   name="date"
                   render={({ field }) => (
                     <FormItem>
@@ -259,7 +290,7 @@ const LandlordPayments = () => {
                     <FormItem>
                       <FormLabel>Description (Optional)</FormLabel>
                       <FormControl>
-                        <Input {...field} placeholder="e.g. June 2023 Rent and Water" />
+                        <Input {...field} placeholder="e.g. June 2023 Combined Rent and Water" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -278,7 +309,7 @@ const LandlordPayments = () => {
                   </DialogClose>
                   <Button type="submit" className="bg-accent text-white hover:bg-accent-hover">
                     <CheckCircle className="h-4 w-4 mr-2" />
-                    Record Payment
+                    Record Combined Payment
                   </Button>
                 </div>
               </form>
@@ -523,4 +554,3 @@ const LandlordPayments = () => {
 };
 
 export default LandlordPayments;
-
