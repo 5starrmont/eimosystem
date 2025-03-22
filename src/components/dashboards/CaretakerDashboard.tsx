@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -7,10 +6,12 @@ import {
   Wrench, 
   Bell, 
   ClipboardList,
-  Building2
+  Building2,
+  Droplet
 } from "lucide-react";
 import NotificationCard from "@/components/NotificationCard";
 import { mockNotifications } from "@/utils/mockData";
+import WaterMeterReadings from "@/components/water/WaterMeterReadings";
 
 interface CaretakerDashboardProps {
   dashboard: any;
@@ -79,6 +80,9 @@ const CaretakerDashboard = ({ dashboard, isLoading }: CaretakerDashboardProps) =
           </CardContent>
         </Card>
       </div>
+      
+      {/* Water Meter Readings Section */}
+      <WaterMeterReadings />
       
       {/* Quick Actions and Notifications */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
