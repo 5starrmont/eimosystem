@@ -12,7 +12,9 @@ import {
   Eye, 
   CheckCircle, 
   XCircle,
-  RotateCcw 
+  RotateCcw,
+  Home,
+  Droplet 
 } from "lucide-react";
 import { format } from "date-fns";
 import StatusBadge from "@/components/StatusBadge";
@@ -32,13 +34,42 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+
+// Define the form schema with validation
+const paymentFormSchema = z.object({
+  tenantId: z.string().min(1, "Tenant selection is required"),
+  rentAmount: z.coerce.number().min(0, "Rent amount cannot be negative"),
+  waterAmount: z.coerce.number().min(0, "Water amount cannot be negative"),
+  date: z.string().min(1, "Payment date is required"),
+  description: z.string().optional(),
+});
+
+type PaymentFormValues = z.infer<typeof paymentFormSchema>;
 
 const LandlordPayments = () => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [payments, setPayments] = useState<Payment[]>(mockPayments);
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  
+  const form = useForm<PaymentFormValues>({
+    resolver: zodResolver(paymentFormSchema),
+    defaultValues: {
+      tenantId: "",
+      rentAmount: 0,
+      waterAmount: 0,
+      date: format(new Date(), 'yyyy-MM-dd'),
+      description: "",
+    },
+  });
   
   // Total completed payments amount
   const totalPaid = payments
@@ -79,6 +110,46 @@ const LandlordPayments = () => {
     setSelectedPayment(payment);
   };
   
+  // Handle form submission
+  const onSubmit = (data: PaymentFormValues) => {
+    const totalAmount = data.rentAmount + data.waterAmount;
+    
+    if (totalAmount <= 0) {
+      toast({
+        title: "Error",
+        description: "Total amount must be greater than 0",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Create a new payment
+    const newPayment: Payment = {
+      id: `payment-${Date.now()}`,
+      tenantId: data.tenantId,
+      amount: totalAmount,
+      type: 'rent', // Default to rent as the primary payment type
+      status: 'completed',
+      date: data.date,
+      description: data.description || `Rent: KES ${data.rentAmount}, Water: KES ${data.waterAmount}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    // Add to payments
+    setPayments([newPayment, ...payments]);
+    
+    // Reset form and close dialog
+    form.reset();
+    setShowPaymentForm(false);
+    
+    // Show success toast
+    toast({
+      title: "Payment Recorded",
+      description: `Payment of KES ${totalAmount.toLocaleString()} recorded successfully.`,
+    });
+  };
+  
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -87,7 +158,7 @@ const LandlordPayments = () => {
           <p className="text-muted-foreground">Track rent and water bill payments.</p>
         </div>
         
-        <Dialog>
+        <Dialog open={showPaymentForm} onOpenChange={setShowPaymentForm}>
           <DialogTrigger asChild>
             <Button className="bg-accent text-white hover:bg-accent-hover">
               <Plus className="h-4 w-4 mr-2" />
@@ -98,87 +169,120 @@ const LandlordPayments = () => {
             <DialogHeader>
               <DialogTitle>Record New Payment</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <label htmlFor="tenant" className="text-sm font-medium">
-                    Tenant
-                  </label>
-                  <select 
-                    id="tenant" 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="">Select a tenant</option>
-                    {mockTenants
-                      .filter(tenant => tenant.status === 'active')
-                      .map(tenant => {
-                        const user = mockUsers.find(u => u.id === tenant.userId);
-                        if (!user) return null;
-                        
-                        return (
-                          <option key={tenant.id} value={tenant.id}>
-                            {user.name}
-                          </option>
-                        );
-                      })}
-                  </select>
-                </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+                <FormField
+                  control={form.control}
+                  name="tenantId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Tenant</FormLabel>
+                      <FormControl>
+                        <select 
+                          {...field}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <option value="">Select a tenant</option>
+                          {mockTenants
+                            .filter(tenant => tenant.status === 'active')
+                            .map(tenant => {
+                              const user = mockUsers.find(u => u.id === tenant.userId);
+                              if (!user) return null;
+                              
+                              return (
+                                <option key={tenant.id} value={tenant.id}>
+                                  {user.name}
+                                </option>
+                              );
+                            })}
+                        </select>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label htmlFor="amount" className="text-sm font-medium">
-                      Amount (KES)
-                    </label>
-                    <Input id="amount" type="number" min="0" placeholder="e.g. 25000" />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="rentAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Rent Amount (KES)</FormLabel>
+                        <div className="flex items-center">
+                          <Home className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <FormControl>
+                            <Input {...field} type="number" min="0" placeholder="e.g. 25000" />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   
-                  <div className="space-y-2">
-                    <label htmlFor="paymentType" className="text-sm font-medium">
-                      Payment Type
-                    </label>
-                    <select 
-                      id="paymentType" 
-                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  <FormField
+                    control={form.control}
+                    name="waterAmount"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Water Amount (KES)</FormLabel>
+                        <div className="flex items-center">
+                          <Droplet className="h-4 w-4 mr-2 text-blue-500" />
+                          <FormControl>
+                            <Input {...field} type="number" min="0" placeholder="e.g. 1500" />
+                          </FormControl>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Payment Date</FormLabel>
+                      <FormControl>
+                        <Input {...field} type="date" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description (Optional)</FormLabel>
+                      <FormControl>
+                        <Input {...field} placeholder="e.g. June 2023 Rent and Water" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="flex justify-end gap-3 pt-4">
+                  <DialogClose asChild>
+                    <Button 
+                      type="button" 
+                      variant="outline"
+                      onClick={() => form.reset()}
                     >
-                      <option value="rent">Rent</option>
-                      <option value="water">Water Bill</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button type="submit" className="bg-accent text-white hover:bg-accent-hover">
+                    <CheckCircle className="h-4 w-4 mr-2" />
+                    Record Payment
+                  </Button>
                 </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="date" className="text-sm font-medium">
-                    Payment Date
-                  </label>
-                  <Input 
-                    id="date" 
-                    type="date" 
-                    defaultValue={format(new Date(), 'yyyy-MM-dd')}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <label htmlFor="description" className="text-sm font-medium">
-                    Description
-                  </label>
-                  <Input 
-                    id="description" 
-                    placeholder="e.g. June 2023 Rent" 
-                  />
-                </div>
-              </div>
-              
-              <div className="flex justify-end gap-3 pt-4">
-                <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </DialogClose>
-                <Button className="bg-accent text-white hover:bg-accent-hover">
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Record Payment
-                </Button>
-              </div>
-            </div>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
@@ -419,3 +523,4 @@ const LandlordPayments = () => {
 };
 
 export default LandlordPayments;
+
