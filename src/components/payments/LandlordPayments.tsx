@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { mockPayments, mockTenants, mockUsers } from "@/utils/mockData";
 import { Payment } from "@/utils/types";
 import { Button } from "@/components/ui/button";
@@ -90,7 +90,7 @@ const LandlordPayments = () => {
   };
   
   // Recalculate total when rent or water changes
-  form.useEffect(() => {
+  useEffect(() => {
     updateTotalAmount();
   }, [rentAmount, waterAmount]);
   
