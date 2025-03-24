@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -7,10 +8,17 @@ import {
   Receipt, 
   Bell, 
   CreditCard,
-  Wrench 
+  Wrench,
+  PlusCircle
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
 import NotificationCard from "@/components/NotificationCard";
 import { mockNotifications, mockPayments } from "@/utils/mockData";
+import { Input } from "@/components/ui/input";
 
 interface TenantDashboardProps {
   dashboard: any;
@@ -18,6 +26,24 @@ interface TenantDashboardProps {
 }
 
 const TenantDashboard = ({ dashboard, isLoading }: TenantDashboardProps) => {
+  const [isMaintenanceDialogOpen, setIsMaintenanceDialogOpen] = useState(false);
+  const [requestTitle, setRequestTitle] = useState("");
+  const [requestDescription, setRequestDescription] = useState("");
+  const { toast } = useToast();
+
+  const handleSubmitRequest = () => {
+    // In a real app, this would send data to backend
+    toast({
+      title: "Maintenance request submitted",
+      description: "Your request has been received and is being processed.",
+    });
+    
+    // Reset form and close dialog
+    setRequestTitle("");
+    setRequestDescription("");
+    setIsMaintenanceDialogOpen(false);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -179,11 +205,20 @@ const TenantDashboard = ({ dashboard, isLoading }: TenantDashboardProps) => {
       
       {/* Maintenance Requests */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center">
             <Wrench className="h-5 w-5 mr-2" />
             Maintenance Requests
           </CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-1"
+            onClick={() => setIsMaintenanceDialogOpen(true)}
+          >
+            <PlusCircle className="h-4 w-4" />
+            <span>New Request</span>
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -215,6 +250,47 @@ const TenantDashboard = ({ dashboard, isLoading }: TenantDashboardProps) => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Maintenance Request Dialog */}
+      <Dialog open={isMaintenanceDialogOpen} onOpenChange={setIsMaintenanceDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Create Maintenance Request</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="request-title">Request Title</Label>
+              <Input
+                id="request-title"
+                placeholder="e.g., Leaking Faucet"
+                value={requestTitle}
+                onChange={(e) => setRequestTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="request-description">Description</Label>
+              <Textarea
+                id="request-description"
+                placeholder="Please describe the issue in detail..."
+                className="min-h-[100px]"
+                value={requestDescription}
+                onChange={(e) => setRequestDescription(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsMaintenanceDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSubmitRequest} 
+              disabled={!requestTitle || !requestDescription}
+            >
+              Submit Request
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
