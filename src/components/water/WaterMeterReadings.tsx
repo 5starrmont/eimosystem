@@ -27,7 +27,7 @@ const mockProperties = [
 ];
 
 // Water price per unit (cubic meter)
-const WATER_PRICE_PER_UNIT = 150; // KES
+const WATER_PRICE_PER_UNIT = 150; // KES per cubic meter (m³)
 
 const WaterMeterReadings = () => {
   const { toast } = useToast();
@@ -73,8 +73,8 @@ const WaterMeterReadings = () => {
       return;
     }
     
-    // Calculate water usage
-    const unitsUsed = newReading - selectedProperty.lastReading;
+    // Calculate water usage in cubic meters (m³)
+    const unitsUsed = newReading - selectedProperty.lastReading; // 1 unit = 1 cubic meter (m³)
     const waterBillAmount = unitsUsed * WATER_PRICE_PER_UNIT;
     const rentAmount = selectedProperty.rent;
     const totalAmount = waterBillAmount + rentAmount;
@@ -198,7 +198,7 @@ const WaterMeterReadings = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="p-4 bg-blue-50 rounded-md">
                 <div className="text-sm text-blue-700 mb-1">Water Usage</div>
-                <div className="text-2xl font-bold">{calculatedUsage.units} units (m³)</div>
+                <div className="text-2xl font-bold">{calculatedUsage.units} m³</div>
                 <div className="text-sm text-muted-foreground mt-1">
                   From {calculatedUsage.lastReading} to {calculatedUsage.newReading}
                 </div>
@@ -206,7 +206,7 @@ const WaterMeterReadings = () => {
                   KES {calculatedUsage.waterAmount.toLocaleString()}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  At KES {WATER_PRICE_PER_UNIT}/unit
+                  At KES {WATER_PRICE_PER_UNIT}/m³
                 </div>
               </div>
               
