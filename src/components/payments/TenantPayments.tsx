@@ -3,7 +3,7 @@ import { useState } from "react";
 import { mockPayments, mockTenants, mockUsers, currentUser } from "@/utils/mockData";
 import { Payment } from "@/utils/types";
 import { Button } from "@/components/ui/button";
-import { Eye, Download, Search, XCircle } from "lucide-react";
+import { Eye, Download, Search, XCircle, CreditCard, Wallet, PlusCircle } from "lucide-react";
 import { format } from "date-fns";
 import StatusBadge from "@/components/StatusBadge";
 import { 
@@ -11,13 +11,18 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle,
+  DialogFooter,
+  DialogDescription
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 
 const TenantPayments = () => {
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   
   // Filter payments for the current tenant
   const tenantUser = mockUsers.find(user => user.role === 'tenant');
@@ -34,6 +39,11 @@ const TenantPayments = () => {
     .filter(p => p.status === 'pending')
     .reduce((sum, p) => sum + p.amount, 0);
   
+  // Mock data for current bills
+  const currentRent = 25000;
+  const currentWaterBill = 1200;
+  const totalCurrentBill = currentRent + currentWaterBill;
+  
   // Filtered payments based on search
   const filteredPayments = tenantPayments.filter(payment => 
     payment.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -41,15 +51,31 @@ const TenantPayments = () => {
     payment.type.toLowerCase().includes(searchTerm.toLowerCase())
   );
   
+  const handleMakePayment = () => {
+    setPaymentDialogOpen(true);
+  };
+  
+  const handleCompletePayment = () => {
+    // Here you would integrate with a payment gateway
+    toast({
+      title: "Payment Successful",
+      description: `Your payment of KES ${totalCurrentBill.toLocaleString()} has been processed.`,
+    });
+    
+    setPaymentDialogOpen(false);
+    
+    // In a real app, you would refresh the payments data from the server
+  };
+  
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-3xl font-bold">My Payments</h1>
-        <p className="text-muted-foreground">Manage and track your rent and water bill payments</p>
+        <p className="text-muted-foreground">Manage and track your rent and utility payments</p>
       </div>
       
       {/* Payment Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Payments (Completed)</CardTitle>
@@ -69,14 +95,35 @@ const TenantPayments = () => {
             <div className="text-2xl font-bold text-warning">
               KES {totalPending.toLocaleString()}
             </div>
-            {totalPending > 0 && (
-              <Button
-                className="mt-2 bg-accent text-white hover:bg-accent-hover w-full"
-                size="sm"
-              >
-                Make Payment
-              </Button>
-            )}
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium">Current Bill Due</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-accent">
+              KES {totalCurrentBill.toLocaleString()}
+            </div>
+            <div className="text-xs text-muted-foreground mt-1 space-y-1">
+              <div className="flex justify-between">
+                <span>Rent:</span>
+                <span>KES {currentRent.toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Water Bill:</span>
+                <span>KES {currentWaterBill.toLocaleString()}</span>
+              </div>
+            </div>
+            <Button
+              className="mt-3 bg-accent text-white hover:bg-accent-hover w-full"
+              size="sm"
+              onClick={handleMakePayment}
+            >
+              <Wallet className="h-4 w-4 mr-2" />
+              Make Combined Payment
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -220,6 +267,63 @@ const TenantPayments = () => {
           </DialogContent>
         </Dialog>
       )}
+      
+      {/* Make Combined Payment Dialog */}
+      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Make Combined Payment</DialogTitle>
+            <DialogDescription>
+              Pay your rent and water bill together in one transaction
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 my-2">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Rent</span>
+                    <span className="font-medium">KES {currentRent.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-muted-foreground">Water Bill</span>
+                    <span className="font-medium">KES {currentWaterBill.toLocaleString()}</span>
+                  </div>
+                  <div className="pt-2 border-t">
+                    <div className="flex justify-between">
+                      <span className="font-medium">Total Amount</span>
+                      <span className="font-bold text-lg">KES {totalCurrentBill.toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <div className="bg-muted p-3 rounded-md">
+              <div className="flex items-start">
+                <PlusCircle className="h-5 w-5 text-accent mr-2 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-medium">Combine for Convenience</h4>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Paying all bills together saves you time and helps you keep track of your expenses more easily.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleCompletePayment} className="bg-accent text-white hover:bg-accent-hover">
+              <CreditCard className="h-4 w-4 mr-2" />
+              Pay KES {totalCurrentBill.toLocaleString()}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
