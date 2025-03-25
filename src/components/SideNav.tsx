@@ -1,5 +1,5 @@
 
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   HomeIcon, 
@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { currentUser } from "@/utils/mockData";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { signOut } from "@/services/authService";
 
 interface SideNavProps {
   className?: string;
@@ -30,32 +32,10 @@ const portalNames = {
 
 const SideNav = ({ className }: SideNavProps) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(true);
-  const [userRole, setUserRole] = useState(currentUser.role);
+  const { user, userRole } = useAuth();
   
-  // Read user role from localStorage on component mount and when it changes
-  useEffect(() => {
-    // Initial read from localStorage
-    const storedRole = localStorage.getItem('userRole');
-    if (storedRole) {
-      setUserRole(storedRole as any);
-    }
-    
-    // Listen for storage changes
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'userRole' && event.newValue) {
-        setUserRole(event.newValue as any);
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
-  
-  const toggleSidebar = () => {
-    setIsOpen(!isOpen);
-  };
-
   // Sidebar navigation links based on user role
   const navLinks = [
     {
@@ -98,8 +78,19 @@ const SideNav = ({ className }: SideNavProps) => {
 
   // Filter links based on current user role from state
   const filteredLinks = navLinks.filter(link => 
-    link.roles.includes(userRole)
+    link.roles.includes(userRole || 'tenant')
   );
+
+  const handleSignOut = async () => {
+    const { error } = await signOut();
+    if (!error) {
+      navigate('/');
+    }
+  };
+
+  const toggleSidebar = () => {
+    setIsOpen(!isOpen);
+  };
 
   return (
     <>
@@ -132,7 +123,7 @@ const SideNav = ({ className }: SideNavProps) => {
               )}
             </div>
             <p className="text-sm font-medium text-sidebar-foreground/90">
-              {portalNames[userRole]}
+              {userRole ? portalNames[userRole as keyof typeof portalNames] : 'User Portal'}
             </p>
           </div>
         </div>
@@ -166,12 +157,15 @@ const SideNav = ({ className }: SideNavProps) => {
             </div>
             
             <div className="ml-3 overflow-hidden">
-              <p className="text-sm font-medium truncate">{currentUser.name}</p>
-              <p className="text-xs text-sidebar-foreground/70 truncate capitalize">{userRole}</p>
+              <p className="text-sm font-medium truncate">{user?.email || currentUser.name}</p>
+              <p className="text-xs text-sidebar-foreground/70 truncate capitalize">{userRole || 'User'}</p>
             </div>
           </div>
           
-          <button className="mt-4 flex items-center text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground w-full">
+          <button 
+            className="mt-4 flex items-center text-sm text-sidebar-foreground/70 hover:text-sidebar-foreground w-full"
+            onClick={handleSignOut}
+          >
             <LogOut className="h-4 w-4 mr-2" />
             <span>Sign out</span>
           </button>

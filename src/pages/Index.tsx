@@ -1,56 +1,43 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Building, Lock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { signIn } from '@/services/authService';
+import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login with role-based redirection
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const { user, error } = await signIn({ email, password });
       
-      // Just for demo
-      if (email.includes('@eimoinvestments.com')) {
-        let role = 'landlord'; // Default role
-        
-        // Determine role based on email
-        if (email.startsWith('tenant')) {
-          role = 'tenant';
-        } else if (email.startsWith('caretaker')) {
-          role = 'caretaker';
-        } else if (email.startsWith('admin')) {
-          role = 'admin';
-        }
-        
-        toast({
-          title: "Login successful",
-          description: `Welcome to ${role.charAt(0).toUpperCase() + role.slice(1)} Portal`,
-        });
-        
-        // Store the role in localStorage for demo purposes
-        localStorage.setItem('userRole', role);
-        
+      if (user && !error) {
         navigate('/dashboard');
-      } else {
-        toast({
-          title: "Login failed",
-          description: "Invalid credentials. Please try again.",
-          variant: "destructive",
-        });
       }
-    }, 1000);
+    } catch (error) {
+      console.error('Login error:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
