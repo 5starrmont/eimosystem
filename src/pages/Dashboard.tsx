@@ -89,10 +89,7 @@ const Dashboard = () => {
     case 'tenant':
       return (
         <Layout>
-          <TenantDashboard 
-            dashboard={dashboard} 
-            isLoading={isLoading}
-          />
+          <TenantDashboard />
         </Layout>
       );
     
