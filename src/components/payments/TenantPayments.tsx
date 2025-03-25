@@ -46,12 +46,36 @@ const TenantPayments = () => {
     setPaymentDialogOpen(true);
   };
   
-  const handleCompletePayment = () => {
+  const handleCompletePayment = (paymentMethod: string, paymentDetails?: any) => {
     // Here you would integrate with a payment gateway
+    let paymentMethodText = "";
+    
+    switch (paymentMethod) {
+      case "mpesa":
+        paymentMethodText = `M-Pesa (${paymentDetails?.phoneNumber || 'Not provided'})`;
+        break;
+      case "card":
+        paymentMethodText = "Credit/Debit Card";
+        break;
+      case "crypto":
+        paymentMethodText = "Cryptocurrency";
+        break;
+      default:
+        paymentMethodText = paymentMethod;
+    }
+    
     toast({
-      title: "Payment Successful",
-      description: `Your payment of KES ${totalCurrentBill.toLocaleString()} has been processed.`,
+      title: "Payment Processing",
+      description: `Your payment of KES ${totalCurrentBill.toLocaleString()} via ${paymentMethodText} is being processed.`,
     });
+    
+    // Simulate payment processing
+    setTimeout(() => {
+      toast({
+        title: "Payment Successful",
+        description: `Your payment of KES ${totalCurrentBill.toLocaleString()} has been completed successfully.`,
+      });
+    }, 2000);
     
     setPaymentDialogOpen(false);
     
