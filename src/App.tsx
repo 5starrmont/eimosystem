@@ -4,7 +4,6 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -12,8 +11,8 @@ import Houses from "./pages/Houses";
 import Tenants from "./pages/Tenants";
 import Payments from "./pages/Payments";
 import Notifications from "./pages/Notifications";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
-import { currentUser } from "./utils/mockData";
 
 // Create React Query client
 const queryClient = new QueryClient();
@@ -83,7 +82,7 @@ const App = () => {
               } /> 
               <Route path="/settings" element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Settings />
                 </ProtectedRoute>
               } /> 
               <Route path="*" element={<NotFound />} />
