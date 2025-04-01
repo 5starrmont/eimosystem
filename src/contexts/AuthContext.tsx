@@ -27,18 +27,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, currentSession) => {
+      (event, currentSession) => {
+        console.log("Auth state changed:", event);
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         
         if (currentSession?.user) {
-          const role = await getUserRole();
-          setUserRole(role);
-          
-          // Update localStorage role for compatibility with existing code
-          if (role) {
-            localStorage.setItem('userRole', role);
-          }
+          // Use setTimeout to avoid Supabase deadlock
+          setTimeout(async () => {
+            try {
+              const role = await getUserRole();
+              console.log("User role from service:", role);
+              setUserRole(role);
+              
+              // Update localStorage role for compatibility
+              if (role) {
+                localStorage.setItem('userRole', role);
+              }
+            } catch (error) {
+              console.error("Error getting user role:", error);
+            }
+          }, 0);
         } else {
           setUserRole(null);
           localStorage.removeItem('userRole');
@@ -49,25 +58,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
 
     // THEN check for existing session
-    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      
-      if (currentSession?.user) {
-        const role = await getUserRole();
-        setUserRole(role);
+    const initializeAuth = async () => {
+      try {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        console.log("Initial session:", currentSession ? "exists" : "none");
         
-        // Update localStorage role for compatibility with existing code
-        if (role) {
-          localStorage.setItem('userRole', role);
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        
+        if (currentSession?.user) {
+          try {
+            const role = await getUserRole();
+            console.log("Initial user role:", role);
+            setUserRole(role);
+            
+            // Update localStorage role for compatibility
+            if (role) {
+              localStorage.setItem('userRole', role);
+            }
+          } catch (error) {
+            console.error("Error getting initial user role:", error);
+          }
         }
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error initializing auth:", error);
+        setIsLoading(false);
       }
-      
-      setIsLoading(false);
-    });
+    };
+    
+    initializeAuth();
 
     return () => {
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, []);
 
