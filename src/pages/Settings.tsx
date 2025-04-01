@@ -18,9 +18,8 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Define form schema for reminder settings
 const reminderSchema = z.object({
-  rentDueDate: z.string().min(1, "Due date reminder is required"),
-  rentLatePenalty: z.boolean(),
-  waterBillReminder: z.boolean(),
+  paymentDueDate: z.string().min(1, "Payment due date reminder is required"),
+  enableLatePenalty: z.boolean(),
   penaltyAmount: z.string().optional(),
   penaltyPercentage: z.string().optional(),
   penaltyType: z.enum(["fixed", "percentage"]),
@@ -74,11 +73,10 @@ const Settings = () => {
   });
   
   // Find default values from reminders
-  const rentReminder = reminders?.find(r => r.type === "rent_due");
-  const waterReminder = reminders?.find(r => r.type === "water_bill");
-  const penaltyReminder = reminders?.find(r => r.type === "rent_late");
+  const paymentReminder = reminders?.find(r => r.type === "combined_payment");
+  const penaltyReminder = reminders?.find(r => r.type === "payment_late");
   
-  const defaultPenaltyType = penaltyReminder?.message_template?.includes("%") 
+  const defaultPenaltyType = penaltyReminder?.messageTemplate?.includes("%") 
     ? "percentage" 
     : "fixed";
   
@@ -86,9 +84,8 @@ const Settings = () => {
   const form = useForm<ReminderFormValues>({
     resolver: zodResolver(reminderSchema),
     defaultValues: {
-      rentDueDate: rentReminder?.day_of_month?.toString() || "1",
-      rentLatePenalty: penaltyReminder?.active || false,
-      waterBillReminder: waterReminder?.active || false,
+      paymentDueDate: paymentReminder?.dayOfMonth?.toString() || "1",
+      enableLatePenalty: penaltyReminder?.enabled || false,
       penaltyAmount: "10",
       penaltyPercentage: "5",
       penaltyType: defaultPenaltyType || "fixed",
@@ -115,34 +112,19 @@ const Settings = () => {
     setIsSaving(true);
     
     try {
-      // Update rent due reminder
-      if (rentReminder) {
+      // Update payment reminder (combines rent and water bill)
+      if (paymentReminder) {
         await updateReminderMutation.mutateAsync({
-          id: rentReminder.id,
-          day_of_month: parseInt(values.rentDueDate),
-          active: true,
+          id: paymentReminder.id,
+          dayOfMonth: parseInt(values.paymentDueDate),
+          enabled: true,
         });
       } else {
         await createReminderMutation.mutateAsync({
-          type: "rent_due",
-          day_of_month: parseInt(values.rentDueDate),
-          message_template: "Your rent is due on day ${day_of_month} of this month.",
-          active: true,
-        });
-      }
-      
-      // Update water bill reminder
-      if (waterReminder) {
-        await updateReminderMutation.mutateAsync({
-          id: waterReminder.id,
-          active: values.waterBillReminder,
-        });
-      } else {
-        await createReminderMutation.mutateAsync({
-          type: "water_bill",
-          day_of_month: 5,
-          message_template: "Your water bill is due.",
-          active: values.waterBillReminder,
+          type: "combined_payment",
+          dayOfMonth: parseInt(values.paymentDueDate),
+          messageTemplate: "Your combined rent and water bill payment is due on day ${dayOfMonth} of this month.",
+          enabled: true,
         });
       }
       
@@ -154,15 +136,15 @@ const Settings = () => {
       if (penaltyReminder) {
         await updateReminderMutation.mutateAsync({
           id: penaltyReminder.id,
-          active: values.rentLatePenalty,
-          message_template: penaltyMessage,
+          enabled: values.enableLatePenalty,
+          messageTemplate: penaltyMessage,
         });
       } else {
         await createReminderMutation.mutateAsync({
-          type: "rent_late",
-          day_of_month: parseInt(values.rentDueDate) + 5,
-          message_template: penaltyMessage,
-          active: values.rentLatePenalty,
+          type: "payment_late",
+          dayOfMonth: parseInt(values.paymentDueDate) + 5,
+          messageTemplate: penaltyMessage,
+          enabled: values.enableLatePenalty,
         });
       }
       
@@ -210,7 +192,7 @@ const Settings = () => {
         <div>
           <h1 className="text-3xl font-bold mb-2">Settings</h1>
           <p className="text-muted-foreground">
-            Configure system reminders and penalty settings
+            Configure payment reminders and penalty settings
           </p>
         </div>
 
@@ -218,18 +200,18 @@ const Settings = () => {
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <Card>
               <CardHeader>
-                <CardTitle>Reminder Settings</CardTitle>
+                <CardTitle>Combined Payment Settings</CardTitle>
                 <CardDescription>
-                  Configure when reminders should be sent to tenants
+                  Configure when combined rent and water bill payment reminders should be sent to tenants
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="rentDueDate"
+                  name="paymentDueDate"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Rent Due Date</FormLabel>
+                      <FormLabel>Payment Due Date</FormLabel>
                       <FormControl>
                         <div className="flex items-center gap-2">
                           <Input 
@@ -243,31 +225,8 @@ const Settings = () => {
                         </div>
                       </FormControl>
                       <FormDescription>
-                        Day of the month when rent is due
+                        Day of the month when combined rent and water bill payment is due
                       </FormDescription>
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="waterBillReminder"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">
-                          Water Bill Reminders
-                        </FormLabel>
-                        <FormDescription>
-                          Automatically notify tenants about water bills
-                        </FormDescription>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
                     </FormItem>
                   )}
                 />
@@ -284,7 +243,7 @@ const Settings = () => {
               <CardContent className="space-y-4">
                 <FormField
                   control={form.control}
-                  name="rentLatePenalty"
+                  name="enableLatePenalty"
                   render={({ field }) => (
                     <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                       <div className="space-y-0.5">
@@ -292,7 +251,7 @@ const Settings = () => {
                           Enable Late Payment Penalties
                         </FormLabel>
                         <FormDescription>
-                          Automatically apply penalties for late rent payments
+                          Automatically apply penalties for late combined payments
                         </FormDescription>
                       </div>
                       <FormControl>
@@ -305,7 +264,7 @@ const Settings = () => {
                   )}
                 />
 
-                {form.watch("rentLatePenalty") && (
+                {form.watch("enableLatePenalty") && (
                   <div className="space-y-4 border rounded-lg p-4 mt-4">
                     <FormField
                       control={form.control}

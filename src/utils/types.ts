@@ -41,7 +41,7 @@ export interface Payment {
   id: string;
   tenantId: string;
   amount: number;
-  type: 'rent' | 'water' | 'other';
+  type: 'rent' | 'water' | 'combined' | 'other';
   status: 'pending' | 'completed' | 'failed';
   date: string;
   description?: string;
@@ -65,9 +65,9 @@ export interface WaterBill {
 
 export interface Reminder {
   id: string;
-  type: 'rent_due' | 'rent_late' | 'water_bill';
+  type: 'combined_payment' | 'payment_late';
   dayOfMonth: number;
-  message: string;
+  messageTemplate: string;
   enabled: boolean;
   createdAt: string;
   updatedAt: string;

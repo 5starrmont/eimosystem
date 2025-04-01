@@ -140,7 +140,7 @@ const LandlordPayments = () => {
       id: `payment-${Date.now()}`,
       tenantId: data.tenantId,
       amount: data.totalAmount,
-      type: 'rent', // We use 'rent' as the primary payment type since it's a combined payment
+      type: 'combined', // Use 'combined' as the payment type
       status: 'completed',
       date: data.date,
       description: data.description || `Combined Payment: Rent KES ${data.rentAmount.toLocaleString()}, Water KES ${data.waterAmount.toLocaleString()}`,

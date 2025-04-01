@@ -66,20 +66,35 @@ const TenantPayments = () => {
     
     toast({
       title: "Payment Processing",
-      description: `Your payment of KES ${totalCurrentBill.toLocaleString()} via ${paymentMethodText} is being processed.`,
+      description: `Your combined payment of KES ${totalCurrentBill.toLocaleString()} via ${paymentMethodText} is being processed.`,
     });
     
     // Simulate payment processing
     setTimeout(() => {
       toast({
         title: "Payment Successful",
-        description: `Your payment of KES ${totalCurrentBill.toLocaleString()} has been completed successfully.`,
+        description: `Your combined payment of KES ${totalCurrentBill.toLocaleString()} has been completed successfully.`,
       });
+      
+      // Add new payment to the list
+      const newPayment: Payment = {
+        id: `payment-${Date.now()}`,
+        tenantId: tenant?.id || '',
+        amount: totalCurrentBill,
+        type: 'combined',
+        status: 'completed',
+        date: new Date().toISOString(),
+        description: `Combined rent and water bill payment`,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      
+      // This would be done via API in a real app
+      mockPayments.unshift(newPayment);
+      
     }, 2000);
     
     setPaymentDialogOpen(false);
-    
-    // In a real app, you would refresh the payments data from the server
   };
 
   const handleViewPaymentDetails = (payment: Payment) => {
@@ -90,7 +105,7 @@ const TenantPayments = () => {
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-3xl font-bold">My Payments</h1>
-        <p className="text-muted-foreground">Manage and track your rent and utility payments</p>
+        <p className="text-muted-foreground">Manage and track your combined rent and utility payments</p>
       </div>
       
       {/* Payment Stats Cards */}

@@ -191,9 +191,9 @@ const MakePaymentDialog = ({
               <div className="flex items-start">
                 <PlusCircle className="h-5 w-5 text-accent mr-2 mt-0.5" />
                 <div>
-                  <h4 className="text-sm font-medium">Combine for Convenience</h4>
+                  <h4 className="text-sm font-medium">Combined Payment Required</h4>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Paying all bills together saves you time and helps you keep track of your expenses more easily.
+                    Rent and water bill must be paid together as one payment. No partial payments are allowed.
                   </p>
                 </div>
               </div>

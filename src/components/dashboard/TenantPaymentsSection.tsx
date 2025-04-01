@@ -36,16 +36,25 @@ const TenantPaymentsSection = ({ isLoading }: TenantPaymentsSectionProps) => {
               {mockPayments.slice(0, 4).map((payment, index) => (
                 <div key={index} className="flex items-start p-3 rounded-lg border">
                   <div className={`flex-shrink-0 w-10 h-10 ${
+                    payment.type === 'combined' ? 'bg-purple-100' : 
                     payment.type === 'rent' ? 'bg-blue-100' : 'bg-green-100'
                   } rounded-full flex items-center justify-center mr-3`}>
-                    {payment.type === 'rent' ? (
-                      <Home className={`h-5 w-5 ${payment.type === 'rent' ? 'text-blue-500' : 'text-green-500'}`} />
+                    {payment.type === 'combined' ? (
+                      <CreditCard className="h-5 w-5 text-purple-500" />
+                    ) : payment.type === 'rent' ? (
+                      <Home className="h-5 w-5 text-blue-500" />
                     ) : (
                       <Droplets className="h-5 w-5 text-green-500" />
                     )}
                   </div>
                   <div>
-                    <h4 className="font-medium">{payment.description}</h4>
+                    <h4 className="font-medium">
+                      {payment.type === 'combined' 
+                        ? 'Combined Payment' 
+                        : payment.type === 'rent' 
+                          ? 'Rent Payment' 
+                          : 'Water Bill Payment'}
+                    </h4>
                     <p className="text-sm text-muted-foreground">
                       KES {payment.amount.toLocaleString()} • {format(new Date(payment.date), 'PPP')}
                     </p>
