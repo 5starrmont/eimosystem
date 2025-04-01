@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Houses from "./pages/Houses";
 import Tenants from "./pages/Tenants";
 import Payments from "./pages/Payments";
+import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 import { currentUser } from "./utils/mockData";
 
@@ -77,7 +78,7 @@ const App = () => {
               } />
               <Route path="/notifications" element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <Notifications />
                 </ProtectedRoute>
               } /> 
               <Route path="/settings" element={
