@@ -2,29 +2,23 @@
 import { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import { format } from "date-fns";
-import { mockDashboard, mockPayments, currentUser } from "@/utils/mockData";
+import { mockDashboard, mockPayments } from "@/utils/mockData";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Import our role-specific dashboard components
 import LandlordDashboard from "@/components/dashboards/LandlordDashboard";
 import CaretakerDashboard from "@/components/dashboards/CaretakerDashboard";
 import TenantDashboard from "@/components/dashboards/TenantDashboard";
 import AdminDashboard from "@/components/dashboards/AdminDashboard";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
   const [dashboard, setDashboard] = useState(mockDashboard);
   const [isLoading, setIsLoading] = useState(true);
-  const [userRole, setUserRole] = useState(currentUser.role);
+  const { userRole, isLoading: isAuthLoading } = useAuth();
   
   useEffect(() => {
-    // Get role from localStorage and update state
-    const storedRole = localStorage.getItem('userRole');
-    if (storedRole) {
-      setUserRole(storedRole as any);
-      // Update currentUser.role for consistency
-      currentUser.role = storedRole as any;
-    }
-    
-    // Simulate loading
+    // Simulate loading dashboard data
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1000);
@@ -63,7 +57,30 @@ const Dashboard = () => {
     water: data.water,
   }));
 
-  // Render different dashboards based on user role (using state instead of directly from currentUser)
+  // Show loading state while waiting for user role to be determined
+  if (isAuthLoading) {
+    return (
+      <Layout>
+        <div className="space-y-6 animate-fade-in">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div>
+              <Skeleton className="h-8 w-48 mb-2" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <Skeleton className="h-4 w-32 mt-4 md:mt-0" />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, index) => (
+              <Skeleton key={index} className="h-32 w-full" />
+            ))}
+          </div>
+          <Skeleton className="h-[300px] w-full" />
+        </div>
+      </Layout>
+    );
+  }
+
+  // Render different dashboards based on user role
   switch (userRole) {
     case 'landlord':
       return (
@@ -105,14 +122,13 @@ const Dashboard = () => {
       );
     
     default:
-      // Default to landlord dashboard if role is not recognized
+      // Default loading state if role isn't recognized
       return (
         <Layout>
-          <LandlordDashboard 
-            dashboard={dashboard} 
-            isLoading={isLoading} 
-            chartData={chartData}
-          />
+          <div className="p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <h2 className="text-xl font-bold text-yellow-700">Loading user information...</h2>
+            <p className="text-muted-foreground">Please wait while we set up your dashboard.</p>
+          </div>
         </Layout>
       );
   }
