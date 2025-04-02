@@ -1,4 +1,4 @@
-import { User, House, Tenant, Payment, WaterBill, Reminder, Notification, MaintenanceRequest } from './types';
+import { User, House, Tenant, Payment, WaterBill, Reminder, Notification, MaintenanceRequest, Dashboard } from './types';
 
 // Mock user data
 export const mockUsers: User[] = [
@@ -340,3 +340,16 @@ export const mockMaintenanceRequests: MaintenanceRequest[] = [
     updatedAt: "2025-03-28T08:45:00Z"
   }
 ];
+
+// Add the missing mockDashboard export
+export const mockDashboard: Dashboard = {
+  totalHouses: mockHouses.length,
+  occupiedHouses: mockHouses.filter(house => house.status === 'occupied').length,
+  vacantHouses: mockHouses.filter(house => house.status === 'vacant').length,
+  maintenanceHouses: mockHouses.filter(house => house.status === 'maintenance').length,
+  totalTenants: mockTenants.length,
+  pendingRent: 60000,
+  pendingWaterBills: 3000,
+  recentPayments: mockPayments.slice(0, 5),
+  recentNotifications: mockNotifications.slice(0, 5)
+};
