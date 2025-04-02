@@ -1,351 +1,342 @@
+import { User, House, Tenant, Payment, WaterBill, Reminder, Notification, MaintenanceRequest } from './types';
 
-import { User, House, Tenant, Payment, WaterBill, Reminder, Notification, Dashboard } from './types';
-
-// Mock Users
+// Mock user data
 export const mockUsers: User[] = [
   {
-    id: '1',
-    name: 'Admin User',
-    email: 'admin@eimoinvestments.com',
-    role: 'admin',
-    phoneNumber: '+254712345678',
-    createdAt: '2023-01-01T00:00:00Z',
-    updatedAt: '2023-01-01T00:00:00Z',
+    id: "1",
+    name: "John Landlord",
+    email: "john.landlord@example.com",
+    role: "landlord",
+    phoneNumber: "123-456-7890",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
   {
-    id: '2',
-    name: 'EIMO Investments',
-    email: 'landlord@eimoinvestments.com',
-    role: 'landlord',
-    phoneNumber: '+254723456789',
-    createdAt: '2023-01-01T00:00:00Z',
-    updatedAt: '2023-01-01T00:00:00Z',
+    id: "2",
+    name: "Alice Caretaker",
+    email: "alice.caretaker@example.com",
+    role: "caretaker",
+    phoneNumber: "987-654-3210",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
   {
-    id: '3',
-    name: 'John Doe',
-    email: 'john@example.com',
-    role: 'tenant',
-    phoneNumber: '+254734567890',
-    createdAt: '2023-01-15T00:00:00Z',
-    updatedAt: '2023-01-15T00:00:00Z',
+    id: "3",
+    name: "Bob Tenant",
+    email: "bob.tenant@example.com",
+    role: "tenant",
+    phoneNumber: "555-123-4567",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
   {
-    id: '4',
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    role: 'tenant',
-    phoneNumber: '+254745678901',
-    createdAt: '2023-02-01T00:00:00Z',
-    updatedAt: '2023-02-01T00:00:00Z',
-  },
-  {
-    id: '5',
-    name: 'David Caretaker',
-    email: 'david@eimoinvestments.com',
-    role: 'caretaker',
-    phoneNumber: '+254756789012',
-    createdAt: '2023-01-05T00:00:00Z',
-    updatedAt: '2023-01-05T00:00:00Z',
-  },
+    id: "4",
+    name: "Admin User",
+    email: "admin@example.com",
+    role: "admin",
+    phoneNumber: "111-222-3333",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
+  }
 ];
 
-// Mock Houses
+// Mock current user
+export const currentUser = mockUsers[0];
+
+// Mock house data
 export const mockHouses: House[] = [
   {
-    id: '1',
-    name: 'Apartment 101',
-    kplcMeterNumber: 'KP12345678',
-    address: '123 City View, Nairobi',
-    monthlyRent: 25000,
-    status: 'occupied',
-    tenantId: '1',
-    landlordId: '2',
-    createdAt: '2023-01-10T00:00:00Z',
-    updatedAt: '2023-01-10T00:00:00Z',
+    id: "1",
+    name: "House A",
+    kplcMeterNumber: "KPLC001",
+    address: "123 Main St",
+    monthlyRent: 50000,
+    status: "occupied",
+    tenantId: "3",
+    landlordId: "1",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
   {
-    id: '2',
-    name: 'Apartment 102',
-    kplcMeterNumber: 'KP23456789',
-    address: '123 City View, Nairobi',
-    monthlyRent: 22000,
-    status: 'occupied',
-    tenantId: '2',
-    landlordId: '2',
-    createdAt: '2023-01-10T00:00:00Z',
-    updatedAt: '2023-01-10T00:00:00Z',
+    id: "2",
+    name: "House B",
+    kplcMeterNumber: "KPLC002",
+    address: "456 Elm St",
+    monthlyRent: 60000,
+    status: "vacant",
+    landlordId: "1",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
   {
-    id: '3',
-    name: 'Apartment 103',
-    kplcMeterNumber: 'KP34567890',
-    address: '123 City View, Nairobi',
-    monthlyRent: 20000,
-    status: 'vacant',
-    landlordId: '2',
-    createdAt: '2023-01-10T00:00:00Z',
-    updatedAt: '2023-01-10T00:00:00Z',
-  },
-  {
-    id: '4',
-    name: 'Apartment 104',
-    kplcMeterNumber: 'KP45678901',
-    address: '123 City View, Nairobi',
-    monthlyRent: 28000,
-    status: 'maintenance',
-    landlordId: '2',
-    createdAt: '2023-01-10T00:00:00Z',
-    updatedAt: '2023-01-10T00:00:00Z',
-  },
-  {
-    id: '5',
-    name: 'House 201',
-    kplcMeterNumber: 'KP56789012',
-    address: '456 Garden Estate, Nairobi',
-    monthlyRent: 35000,
-    status: 'occupied',
-    tenantId: '3',
-    landlordId: '2',
-    createdAt: '2023-02-15T00:00:00Z',
-    updatedAt: '2023-02-15T00:00:00Z',
-  },
+    id: "3",
+    name: "House C",
+    kplcMeterNumber: "KPLC003",
+    address: "789 Oak St",
+    monthlyRent: 70000,
+    status: "maintenance",
+    landlordId: "1",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
+  }
 ];
 
-// Mock Tenants
+// Mock tenant data
 export const mockTenants: Tenant[] = [
   {
-    id: '1',
-    userId: '3',
-    houseId: '1',
-    moveInDate: '2023-01-15T00:00:00Z',
-    status: 'active',
-    rentBalance: 0,
-    waterBillBalance: 1200,
-    createdAt: '2023-01-15T00:00:00Z',
-    updatedAt: '2023-01-15T00:00:00Z',
-  },
-  {
-    id: '2',
-    userId: '4',
-    houseId: '2',
-    moveInDate: '2023-02-01T00:00:00Z',
-    status: 'active',
-    rentBalance: 5000,
-    waterBillBalance: 800,
-    createdAt: '2023-02-01T00:00:00Z',
-    updatedAt: '2023-02-01T00:00:00Z',
-  },
-  {
-    id: '3',
-    userId: '4',
-    houseId: '5',
-    moveInDate: '2023-02-15T00:00:00Z',
-    status: 'moving_out',
-    moveOutDate: '2023-06-30T00:00:00Z',
+    id: "1",
+    userId: "3",
+    houseId: "1",
+    moveInDate: "2023-01-01T08:00:00Z",
+    status: "active",
     rentBalance: 10000,
-    waterBillBalance: 2500,
-    createdAt: '2023-02-15T00:00:00Z',
-    updatedAt: '2023-06-15T00:00:00Z',
-  },
+    waterBillBalance: 1000,
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
+  }
 ];
 
-// Mock Payments
+// Mock payment data
 export const mockPayments: Payment[] = [
   {
-    id: '1',
-    tenantId: '1',
-    amount: 25000,
-    type: 'rent',
-    status: 'completed',
-    date: '2023-05-01T09:30:00Z',
-    description: 'May 2023 Rent',
-    receiptUrl: '/receipts/receipt-1.pdf',
-    createdAt: '2023-05-01T09:30:00Z',
-    updatedAt: '2023-05-01T09:30:00Z',
+    id: "1",
+    tenantId: "1",
+    amount: 51000,
+    type: "combined",
+    status: "completed",
+    date: "2023-01-05T08:00:00Z",
+    description: "Rent and water bill payment",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
   {
-    id: '2',
-    tenantId: '1',
-    amount: 1500,
-    type: 'water',
-    status: 'completed',
-    date: '2023-05-05T14:20:00Z',
-    description: 'May 2023 Water Bill',
-    receiptUrl: '/receipts/receipt-2.pdf',
-    createdAt: '2023-05-05T14:20:00Z',
-    updatedAt: '2023-05-05T14:20:00Z',
+    id: "2",
+    tenantId: "1",
+    amount: 50000,
+    type: "rent",
+    status: "completed",
+    date: "2023-02-05T08:00:00Z",
+    description: "Rent payment",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
   {
-    id: '3',
-    tenantId: '2',
-    amount: 17000,
-    type: 'rent',
-    status: 'completed',
-    date: '2023-05-03T10:15:00Z',
-    description: 'May 2023 Rent (Partial)',
-    receiptUrl: '/receipts/receipt-3.pdf',
-    createdAt: '2023-05-03T10:15:00Z',
-    updatedAt: '2023-05-03T10:15:00Z',
+    id: "3",
+    tenantId: "1",
+    amount: 1000,
+    type: "water",
+    status: "completed",
+    date: "2023-02-05T08:00:00Z",
+    description: "Water bill payment",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
   {
-    id: '4',
-    tenantId: '3',
-    amount: 25000,
-    type: 'rent',
-    status: 'pending',
-    date: '2023-05-30T16:45:00Z',
-    description: 'June 2023 Rent',
-    createdAt: '2023-05-30T16:45:00Z',
-    updatedAt: '2023-05-30T16:45:00Z',
-  },
+    id: "4",
+    tenantId: "1",
+    amount: 50000,
+    type: "rent",
+    status: "pending",
+    date: "2023-03-05T08:00:00Z",
+    description: "Rent payment",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
+  }
 ];
 
-// Mock Water Bills
+// Mock water bill data
 export const mockWaterBills: WaterBill[] = [
   {
-    id: '1',
-    houseId: '1',
-    tenantId: '1',
-    amount: 1500,
-    month: '2023-05',
-    status: 'paid',
-    dueDate: '2023-05-15T00:00:00Z',
-    paymentId: '2',
-    createdAt: '2023-05-01T00:00:00Z',
-    updatedAt: '2023-05-05T14:20:00Z',
+    id: "1",
+    houseId: "1",
+    tenantId: "1",
+    amount: 1000,
+    month: "January",
+    status: "paid",
+    dueDate: "2023-01-05T08:00:00Z",
+    paymentId: "1",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
   {
-    id: '2',
-    houseId: '2',
-    tenantId: '2',
-    amount: 800,
-    month: '2023-05',
-    status: 'pending',
-    dueDate: '2023-05-15T00:00:00Z',
-    createdAt: '2023-05-01T00:00:00Z',
-    updatedAt: '2023-05-01T00:00:00Z',
+    id: "2",
+    houseId: "1",
+    tenantId: "1",
+    amount: 1000,
+    month: "February",
+    status: "paid",
+    dueDate: "2023-02-05T08:00:00Z",
+    paymentId: "3",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
   {
-    id: '3',
-    houseId: '5',
-    tenantId: '3',
-    amount: 2500,
-    month: '2023-05',
-    status: 'overdue',
-    dueDate: '2023-05-15T00:00:00Z',
-    createdAt: '2023-05-01T00:00:00Z',
-    updatedAt: '2023-05-16T00:00:00Z',
-  },
+    id: "3",
+    houseId: "1",
+    tenantId: "1",
+    amount: 1000,
+    month: "March",
+    status: "pending",
+    dueDate: "2023-03-05T08:00:00Z",
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
+  }
 ];
 
-// Mock Reminders
-export const mockReminders: Reminder[] = [
+// Update the reminders data to use the correct types
+export const mockReminders = [
   {
-    id: '1',
-    type: 'rent_due',
-    dayOfMonth: 1,
-    message: 'Your rent for {month} is due on {dueDate}. Please pay on time to avoid penalties.',
-    enabled: true,
-    createdAt: '2023-01-01T00:00:00Z',
-    updatedAt: '2023-01-01T00:00:00Z',
-  },
-  {
-    id: '2',
-    type: 'rent_late',
-    dayOfMonth: 4,
-    message: 'Your rent payment for {month} is overdue. Please pay immediately to avoid additional penalties.',
-    enabled: true,
-    createdAt: '2023-01-01T00:00:00Z',
-    updatedAt: '2023-01-01T00:00:00Z',
-  },
-  {
-    id: '3',
-    type: 'water_bill',
+    id: "1",
+    type: "combined_payment",
     dayOfMonth: 5,
-    message: 'Your water bill for {month} is now available. Amount: KES {amount}. Due date: {dueDate}.',
+    messageTemplate: "Your rent and water bill payment of KES {{amount}} is due on the 5th of this month. Please make payment to avoid penalties.",
     enabled: true,
-    createdAt: '2023-01-01T00:00:00Z',
-    updatedAt: '2023-01-01T00:00:00Z',
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
+  {
+    id: "2",
+    type: "payment_late",
+    dayOfMonth: 10,
+    messageTemplate: "Your rent and water bill payment of KES {{amount}} is now late. A penalty of 10% will be applied if payment is not made within 5 days.",
+    enabled: true,
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
+  }
 ];
 
-// Mock Notifications
+// Mock notification data
 export const mockNotifications: Notification[] = [
   {
-    id: '1',
-    userId: '2',
-    title: 'New Payment',
-    message: 'John Doe has paid KES 25,000 for May 2023 rent.',
-    type: 'success',
+    id: "1",
+    userId: "1",
+    title: "New Tenant Added",
+    message: "A new tenant has been added to House A.",
+    type: "info",
     read: false,
-    createdAt: '2023-05-01T09:30:00Z',
-    updatedAt: '2023-05-01T09:30:00Z',
+    createdAt: "2023-01-01T08:00:00Z",
+    updatedAt: "2023-01-01T08:00:00Z"
   },
   {
-    id: '2',
-    userId: '2',
-    title: 'New Payment',
-    message: 'John Doe has paid KES 1,500 for May 2023 water bill.',
-    type: 'success',
+    id: "2",
+    userId: "1",
+    title: "Rent Payment Received",
+    message: "Rent payment of KES 50000 received from Bob Tenant.",
+    type: "success",
     read: true,
-    createdAt: '2023-05-05T14:20:00Z',
-    updatedAt: '2023-05-05T15:00:00Z',
+    createdAt: "2023-01-05T08:00:00Z",
+    updatedAt: "2023-01-05T08:00:00Z"
   },
   {
-    id: '3',
-    userId: '2',
-    title: 'Partial Payment',
-    message: 'Jane Smith has paid KES 17,000 for May 2023 rent (partial).',
-    type: 'warning',
+    id: "3",
+    userId: "2",
+    title: "Maintenance Request",
+    message: "A new maintenance request has been created for House C.",
+    type: "warning",
     read: false,
-    createdAt: '2023-05-03T10:15:00Z',
-    updatedAt: '2023-05-03T10:15:00Z',
+    createdAt: "2023-01-10T08:00:00Z",
+    updatedAt: "2023-01-10T08:00:00Z"
   },
   {
-    id: '4',
-    userId: '3',
-    title: 'Payment Confirmation',
-    message: 'Your payment of KES 25,000 for May 2023 rent has been received.',
-    type: 'success',
+    id: "4",
+    userId: "3",
+    title: "Rent Due Soon",
+    message: "Your rent payment of KES 50000 is due on March 5th.",
+    type: "info",
+    read: false,
+    createdAt: "2023-03-01T08:00:00Z",
+    updatedAt: "2023-03-01T08:00:00Z"
+  },
+  {
+    id: "5",
+    userId: "1",
+    title: "Water Bill Overdue",
+    message: "Water bill payment of KES 1000 is overdue for House A.",
+    type: "error",
+    read: false,
+    createdAt: "2023-03-06T08:00:00Z",
+    updatedAt: "2023-03-06T08:00:00Z"
+  },
+  {
+    id: "6",
+    userId: "4",
+    title: "System Update",
+    message: "The system has been updated to the latest version.",
+    type: "success",
     read: true,
-    createdAt: '2023-05-01T09:30:00Z',
-    updatedAt: '2023-05-01T10:00:00Z',
+    createdAt: "2023-03-07T08:00:00Z",
+    updatedAt: "2023-03-07T08:00:00Z"
+  },
+  
+  // Add maintenance request notifications for caretakers
+  {
+    id: "7",
+    userId: "2", // caretaker ID
+    title: "New Maintenance Request",
+    message: "Urgent maintenance request: Electrical short circuit in living room for House #3",
+    type: "error",
+    read: false,
+    createdAt: "2025-03-28T08:45:00Z",
+    updatedAt: "2025-03-28T08:45:00Z",
+    relatedTo: "3", // maintenance request ID
+    relatedType: "maintenance"
   },
   {
-    id: '5',
-    userId: '4',
-    title: 'Reminder: Outstanding Rent',
-    message: 'You have an outstanding rent balance of KES 5,000 for May 2023.',
-    type: 'warning',
-    read: false,
-    createdAt: '2023-05-04T08:00:00Z',
-    updatedAt: '2023-05-04T08:00:00Z',
+    id: "8",
+    userId: "2", // caretaker ID
+    title: "Maintenance Request Update",
+    message: "Maintenance request for Broken bathroom door lock is now in progress",
+    type: "info",
+    read: true,
+    createdAt: "2025-03-22T11:20:00Z",
+    updatedAt: "2025-03-22T11:20:00Z",
+    relatedTo: "2", // maintenance request ID
+    relatedType: "maintenance"
   },
   {
-    id: '6',
-    userId: '5',
-    title: 'Tenant Moving Out',
-    message: 'Tenant Jane Smith is moving out of House 201 on June 30, 2023.',
-    type: 'info',
+    id: "9",
+    userId: "2", // caretaker ID
+    title: "New Maintenance Request",
+    message: "Maintenance request: Leaking kitchen faucet for House #1",
+    type: "warning",
     read: false,
-    createdAt: '2023-06-15T13:45:00Z',
-    updatedAt: '2023-06-15T13:45:00Z',
-  },
+    createdAt: "2025-03-25T14:30:00Z",
+    updatedAt: "2025-03-25T14:30:00Z",
+    relatedTo: "1", // maintenance request ID
+    relatedType: "maintenance"
+  }
 ];
 
-// Mock Dashboard Data
-export const mockDashboard: Dashboard = {
-  totalHouses: mockHouses.length,
-  occupiedHouses: mockHouses.filter(h => h.status === 'occupied').length,
-  vacantHouses: mockHouses.filter(h => h.status === 'vacant').length,
-  maintenanceHouses: mockHouses.filter(h => h.status === 'maintenance').length,
-  totalTenants: mockTenants.filter(t => t.status === 'active').length,
-  pendingRent: mockTenants.reduce((sum, tenant) => sum + tenant.rentBalance, 0),
-  pendingWaterBills: mockTenants.reduce((sum, tenant) => sum + tenant.waterBillBalance, 0),
-  recentPayments: mockPayments.slice(0, 5),
-  recentNotifications: mockNotifications.slice(0, 5),
-};
-
-// Current logged in user (for demonstration)
-export const currentUser = mockUsers[1]; // Landlord
+// Add mock maintenance requests to be used in the caretaker notifications
+export const mockMaintenanceRequests: MaintenanceRequest[] = [
+  {
+    id: "1",
+    houseId: "1",
+    reportedBy: "3", // tenant ID
+    description: "Leaking kitchen faucet",
+    status: "pending",
+    priority: "medium",
+    createdAt: "2025-03-25T14:30:00Z",
+    updatedAt: "2025-03-25T14:30:00Z"
+  },
+  {
+    id: "2",
+    houseId: "2",
+    reportedBy: "3",
+    description: "Broken bathroom door lock",
+    status: "in_progress",
+    priority: "low",
+    createdAt: "2025-03-20T10:15:00Z",
+    updatedAt: "2025-03-22T11:20:00Z"
+  },
+  {
+    id: "3",
+    houseId: "3",
+    reportedBy: "5",
+    description: "Electrical short circuit in living room",
+    status: "pending",
+    priority: "urgent",
+    createdAt: "2025-03-28T08:45:00Z",
+    updatedAt: "2025-03-28T08:45:00Z"
+  }
+];

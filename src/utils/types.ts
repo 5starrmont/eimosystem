@@ -1,4 +1,3 @@
-
 export type UserRole = 'admin' | 'landlord' | 'tenant' | 'caretaker';
 
 export interface User {
@@ -80,6 +79,19 @@ export interface Notification {
   message: string;
   type: 'info' | 'success' | 'warning' | 'error';
   read: boolean;
+  createdAt: string;
+  updatedAt: string;
+  relatedTo?: string; // Can reference a maintenance request ID or other entity
+  relatedType?: 'maintenance' | 'payment' | 'general';
+}
+
+export interface MaintenanceRequest {
+  id: string;
+  houseId: string;
+  reportedBy: string;
+  description: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
   createdAt: string;
   updatedAt: string;
 }
