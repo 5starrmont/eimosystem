@@ -4,6 +4,7 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 import fs from 'fs';
+import type { Plugin, PluginOption, TransformResult } from 'vite';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -24,8 +25,8 @@ export default defineConfig(({ mode }) => {
         // Add a custom plugin to handle potential file encoding issues
         {
           name: 'handle-encoding-issues',
-          enforce: 'pre',
-          transform(code, id) {
+          enforce: 'pre' as const,
+          transform(code: string, id: string): TransformResult | null {
             // Remove BOM characters from any loaded file if present
             if (code.charCodeAt(0) === 0xFEFF) {
               return { code: code.slice(1), map: null };
@@ -33,7 +34,7 @@ export default defineConfig(({ mode }) => {
             return null;
           }
         }
-      ].filter(Boolean),
+      ].filter(Boolean) as PluginOption[],
       resolve: {
         alias: {
           "@": path.resolve(__dirname, "./src"),
