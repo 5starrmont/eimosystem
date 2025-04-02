@@ -12,6 +12,7 @@ import Tenants from "./pages/Tenants";
 import Payments from "./pages/Payments";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
+import Users from "./pages/Users";
 import NotFound from "./pages/NotFound";
 
 // Create React Query client
@@ -40,6 +41,27 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   
   if (!user) {
     return <Navigate to="/" />;
+  }
+  
+  return <>{children}</>;
+};
+
+// Admin-only route component
+const AdminRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, userRole, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div className="flex items-center justify-center h-screen">
+      <p className="text-lg">Loading...</p>
+    </div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/" />;
+  }
+  
+  if (userRole !== 'admin') {
+    return <Navigate to="/dashboard" />;
   }
   
   return <>{children}</>;
@@ -85,6 +107,11 @@ const App = () => {
                   <Settings />
                 </ProtectedRoute>
               } /> 
+              <Route path="/users" element={
+                <AdminRoute>
+                  <Users />
+                </AdminRoute>
+              } />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>

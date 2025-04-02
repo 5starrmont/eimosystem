@@ -1,4 +1,3 @@
-
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
@@ -11,7 +10,8 @@ import {
   LogOut,
   User,
   Menu,
-  Shield
+  Shield,
+  UserCog
 } from "lucide-react";
 import { currentUser } from "@/utils/mockData";
 import { useState, useEffect } from "react";
@@ -55,6 +55,12 @@ const SideNav = ({ className }: SideNavProps) => {
       href: "/tenants",
       icon: <Users className="h-5 w-5" />,
       roles: ["admin", "landlord", "caretaker"],
+    },
+    {
+      title: "Users",
+      href: "/users",
+      icon: <UserCog className="h-5 w-5" />,
+      roles: ["admin"],
     },
     {
       title: "Payments",

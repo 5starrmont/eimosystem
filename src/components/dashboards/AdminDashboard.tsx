@@ -1,4 +1,3 @@
-
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -10,11 +9,14 @@ import {
   Settings,
   UserCog,
   Bell,
-  Activity
+  Activity,
+  ArrowRight
 } from "lucide-react";
 import { BarChart } from "@/components/charts/BarChart";
 import NotificationCard from "@/components/NotificationCard";
 import { mockNotifications } from "@/utils/mockData";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 interface AdminDashboardProps {
   dashboard: any;
@@ -23,6 +25,13 @@ interface AdminDashboardProps {
 }
 
 const AdminDashboard = ({ dashboard, isLoading, chartData }: AdminDashboardProps) => {
+  const navigate = useNavigate();
+  
+  const handleViewAllUsers = () => {
+    // Navigate to a users page (you might need to create this)
+    navigate('/users');
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -61,10 +70,19 @@ const AdminDashboard = ({ dashboard, isLoading, chartData }: AdminDashboardProps
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{dashboard.totalTenants + 5}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              <span className="flex items-center">
-                <span>Across all user roles</span>
+            <div className="flex items-center justify-between mt-1">
+              <span className="text-xs text-muted-foreground">
+                Across all user roles
               </span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="flex items-center text-xs font-medium"
+                onClick={handleViewAllUsers}
+              >
+                View all
+                <ArrowRight className="ml-1 h-3 w-3" />
+              </Button>
             </div>
           </CardContent>
         </Card>
