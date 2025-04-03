@@ -1,3 +1,4 @@
+
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
@@ -5,14 +6,12 @@ import {
   Users, 
   CreditCard,
   Shield,
-  BarChart3,
   Settings,
   UserCog,
   Bell,
   Activity,
   ArrowRight
 } from "lucide-react";
-import { BarChart } from "@/components/charts/BarChart";
 import NotificationCard from "@/components/NotificationCard";
 import { mockNotifications } from "@/utils/mockData";
 import { Button } from "@/components/ui/button";
@@ -118,96 +117,94 @@ const AdminDashboard = ({ dashboard, isLoading, chartData }: AdminDashboardProps
         </Card>
       </div>
       
-      {/* Charts and Admin Controls */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <BarChart3 className="h-5 w-5 mr-2" />
-              Revenue Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="h-[300px]">
-              <BarChart
-                data={chartData}
-                index="name"
-                categories={["rent", "water"]}
-                colors={["#8B5CF6", "#10B981"]}
-                valueFormatter={(value: number) => `KES ${value.toLocaleString()}`}
-                customTooltip
-              />
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Bell className="h-5 w-5 mr-2" />
-              System Alerts
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {isLoading ? (
-                // Skeleton Loader
-                Array(3).fill(0).map((_, i) => (
-                  <div key={i} className="animate-pulse flex items-start p-4 rounded-lg">
-                    <div className="h-5 w-5 rounded-full bg-eimo-200 mr-4"></div>
-                    <div className="flex-grow">
-                      <div className="h-4 bg-eimo-200 rounded w-3/4 mb-2"></div>
-                      <div className="h-3 bg-eimo-200 rounded w-full mb-2"></div>
-                      <div className="h-3 bg-eimo-200 rounded w-1/2"></div>
-                    </div>
+      {/* System Alerts - Now the Main Section */}
+      <Card className="shadow-md border-purple-100">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Bell className="h-5 w-5 mr-2 text-purple-600" />
+            System Alerts
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {isLoading ? (
+              // Skeleton Loader
+              Array(3).fill(0).map((_, i) => (
+                <div key={i} className="animate-pulse flex items-start p-4 rounded-lg">
+                  <div className="h-5 w-5 rounded-full bg-eimo-200 mr-4"></div>
+                  <div className="flex-grow">
+                    <div className="h-4 bg-eimo-200 rounded w-3/4 mb-2"></div>
+                    <div className="h-3 bg-eimo-200 rounded w-full mb-2"></div>
+                    <div className="h-3 bg-eimo-200 rounded w-1/2"></div>
                   </div>
-                ))
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex items-start p-3 rounded-lg border border-purple-200 bg-purple-50">
-                    <div className="flex-shrink-0 w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center mr-3">
-                      <Shield className="h-5 w-5 text-purple-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">System Update Available</h4>
-                      <p className="text-sm text-muted-foreground">New version 2.1.0 ready to install</p>
-                      <div className="mt-2">
-                        <span className="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-700">Update</span>
-                      </div>
-                    </div>
+                </div>
+              ))
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex items-start p-4 rounded-lg border border-purple-200 bg-purple-50">
+                  <div className="flex-shrink-0 w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mr-4">
+                    <Shield className="h-6 w-6 text-purple-600" />
                   </div>
-                  
-                  <div className="flex items-start p-3 rounded-lg border">
-                    <div className="flex-shrink-0 w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                      <UserCog className="h-5 w-5 text-blue-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">New User Registrations</h4>
-                      <p className="text-sm text-muted-foreground">2 new user accounts pending approval</p>
-                      <div className="mt-2">
-                        <span className="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-700">Review</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start p-3 rounded-lg border">
-                    <div className="flex-shrink-0 w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center mr-3">
-                      <Settings className="h-5 w-5 text-orange-500" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium">Database Maintenance</h4>
-                      <p className="text-sm text-muted-foreground">Scheduled for tonight at 2:00 AM</p>
-                      <div className="mt-2">
-                        <span className="px-2 py-1 text-xs rounded-full bg-orange-100 text-orange-700">Automated</span>
-                      </div>
+                  <div>
+                    <h4 className="font-medium text-lg">System Update Available</h4>
+                    <p className="text-sm text-muted-foreground mt-1">New version 2.1.0 is ready to install with improved security features and bug fixes.</p>
+                    <div className="mt-3">
+                      <Button variant="outline" size="sm" className="bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-200">
+                        Install Update
+                      </Button>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                
+                <div className="flex items-start p-4 rounded-lg border border-blue-200 bg-blue-50">
+                  <div className="flex-shrink-0 w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                    <UserCog className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-lg">New User Registrations</h4>
+                    <p className="text-sm text-muted-foreground mt-1">2 new user accounts are pending approval. Review their details and grant access.</p>
+                    <div className="mt-3">
+                      <Button variant="outline" size="sm" className="bg-blue-100 text-blue-700 hover:bg-blue-200 border-blue-200">
+                        Review Users
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-start p-4 rounded-lg border border-orange-200 bg-orange-50">
+                  <div className="flex-shrink-0 w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+                    <Settings className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-lg">Database Maintenance</h4>
+                    <p className="text-sm text-muted-foreground mt-1">Scheduled maintenance for tonight at 2:00 AM. System performance may be affected during this time.</p>
+                    <div className="mt-3">
+                      <Button variant="outline" size="sm" className="bg-orange-100 text-orange-700 hover:bg-orange-200 border-orange-200">
+                        View Schedule
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-start p-4 rounded-lg border border-green-200 bg-green-50">
+                  <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mr-4">
+                    <Activity className="h-6 w-6 text-green-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-lg">System Performance</h4>
+                    <p className="text-sm text-muted-foreground mt-1">All systems are operating at optimal performance. Current uptime: 24 days.</p>
+                    <div className="mt-3">
+                      <Button variant="outline" size="sm" className="bg-green-100 text-green-700 hover:bg-green-200 border-green-200">
+                        View Details
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
       
       {/* Recent System Activities */}
       <Card>
