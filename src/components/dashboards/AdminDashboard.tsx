@@ -32,11 +32,10 @@ const AdminDashboard = ({ dashboard, isLoading, chartData }: AdminDashboardProps
         </div>
       </div>
       
-      {/* Stats Cards */}
+      {/* Stats Cards - Remove financial info */}
       <StatCards 
         totalHouses={dashboard.totalHouses} 
         totalUsers={dashboard.totalTenants + 5}
-        totalRevenue={dashboard.pendingRent * 3}
         onViewAllUsers={handleViewAllUsers}
       />
       
