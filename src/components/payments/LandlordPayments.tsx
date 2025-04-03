@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import StatusBadge from "@/components/StatusBadge";
+import PaymentDetailsDialog from "@/components/payments/PaymentDetailsDialog";
 import { 
   Dialog, 
   DialogContent, 
@@ -57,7 +58,11 @@ const paymentFormSchema = z.object({
 
 type PaymentFormValues = z.infer<typeof paymentFormSchema>;
 
-const LandlordPayments = () => {
+interface LandlordPaymentsProps {
+  isAdmin?: boolean;
+}
+
+const LandlordPayments = ({ isAdmin = false }: LandlordPaymentsProps) => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("all");
@@ -94,15 +99,15 @@ const LandlordPayments = () => {
     updateTotalAmount();
   }, [rentAmount, waterAmount]);
   
-  // Total completed payments amount
-  const totalPaid = payments
+  // Total completed payments amount - only needed for non-admin view
+  const totalPaid = !isAdmin ? payments
     .filter(p => p.status === 'completed')
-    .reduce((sum, p) => sum + p.amount, 0);
+    .reduce((sum, p) => sum + p.amount, 0) : 0;
   
-  // Total pending payments amount
-  const totalPending = payments
+  // Total pending payments amount - only needed for non-admin view
+  const totalPending = !isAdmin ? payments
     .filter(p => p.status === 'pending')
-    .reduce((sum, p) => sum + p.amount, 0);
+    .reduce((sum, p) => sum + p.amount, 0) : 0;
   
   // Get tenant name from payment
   const getTenantName = (payment: Payment): string => {
@@ -131,6 +136,26 @@ const LandlordPayments = () => {
   // View payment details
   const handleViewPayment = (payment: Payment) => {
     setSelectedPayment(payment);
+  };
+  
+  // Handle payment verification retry
+  const handleRetryVerification = (paymentId: string) => {
+    // In a real app, this would call an API to retry the verification
+    // For demo purposes, we'll just update the UI
+    setPayments(prev => prev.map(p => {
+      if (p.id === paymentId) {
+        const newStatus = Math.random() > 0.5 ? 'completed' : 'pending';
+        return {...p, status: newStatus};
+      }
+      return p;
+    }));
+    
+    setSelectedPayment(null); // Close the dialog
+    
+    toast({
+      title: "Payment Verification",
+      description: "Verification process completed.",
+    });
   };
   
   // Handle form submission
@@ -167,23 +192,29 @@ const LandlordPayments = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Payments</h1>
-          <p className="text-muted-foreground">Record and manage combined rent and water bill payments.</p>
+          <p className="text-muted-foreground">
+            {isAdmin 
+              ? "Monitor and verify payment status" 
+              : "Record and manage combined rent and water bill payments"
+            }
+          </p>
         </div>
         
-        <Dialog open={showPaymentForm} onOpenChange={setShowPaymentForm}>
-          <DialogTrigger asChild>
-            <Button className="bg-accent text-white hover:bg-accent-hover">
-              <Plus className="h-4 w-4 mr-2" />
-              Record Payment
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[550px]">
-            <DialogHeader>
-              <DialogTitle>Record New Combined Payment</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-                <FormField
+        {!isAdmin && (
+          <Dialog open={showPaymentForm} onOpenChange={setShowPaymentForm}>
+            <DialogTrigger asChild>
+              <Button className="bg-accent text-white hover:bg-accent-hover">
+                <Plus className="h-4 w-4 mr-2" />
+                Record Payment
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[550px]">
+              <DialogHeader>
+                <DialogTitle>Record New Combined Payment</DialogTitle>
+              </DialogHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+                  <FormField
                   control={form.control}
                   name="tenantId"
                   render={({ field }) => (
@@ -296,52 +327,55 @@ const LandlordPayments = () => {
                     </FormItem>
                   )}
                 />
-                
-                <div className="flex justify-end gap-3 pt-4">
-                  <DialogClose asChild>
-                    <Button 
-                      type="button" 
-                      variant="outline"
-                      onClick={() => form.reset()}
-                    >
-                      Cancel
+                  
+                  <div className="flex justify-end gap-3 pt-4">
+                    <DialogClose asChild>
+                      <Button 
+                        type="button" 
+                        variant="outline"
+                        onClick={() => form.reset()}
+                      >
+                        Cancel
+                      </Button>
+                    </DialogClose>
+                    <Button type="submit" className="bg-accent text-white hover:bg-accent-hover">
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Record Combined Payment
                     </Button>
-                  </DialogClose>
-                  <Button type="submit" className="bg-accent text-white hover:bg-accent-hover">
-                    <CheckCircle className="h-4 w-4 mr-2" />
-                    Record Combined Payment
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
       
-      {/* Payment Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Total Payments (Completed)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">
-              KES {totalPaid.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-warning">
-              KES {totalPending.toLocaleString()}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Payment Stats - Only show for non-admin users */}
+      {!isAdmin && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Total Payments (Completed)</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-success">
+                KES {totalPaid.toLocaleString()}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-warning">
+                KES {totalPending.toLocaleString()}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
       
       {/* Filters */}
       <div className="flex flex-col sm:flex-row gap-4">
@@ -426,9 +460,11 @@ const LandlordPayments = () => {
                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                   Date
                 </th>
-                <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                  Amount
-                </th>
+                {!isAdmin && (
+                  <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                    Amount
+                  </th>
+                )}
                 <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                   Type
                 </th>
@@ -450,9 +486,11 @@ const LandlordPayments = () => {
                     <td className="p-4 align-middle">
                       {format(new Date(payment.date), 'dd MMM yyyy')}
                     </td>
-                    <td className="p-4 align-middle font-medium">
-                      KES {payment.amount.toLocaleString()}
-                    </td>
+                    {!isAdmin && (
+                      <td className="p-4 align-middle font-medium">
+                        KES {payment.amount.toLocaleString()}
+                      </td>
+                    )}
                     <td className="p-4 align-middle capitalize">
                       {payment.type}
                     </td>
@@ -469,7 +507,7 @@ const LandlordPayments = () => {
                           <Eye className="h-4 w-4" />
                         </Button>
                         
-                        {payment.receiptUrl && (
+                        {payment.receiptUrl && !isAdmin && (
                           <Button 
                             variant="ghost" 
                             size="icon"
@@ -484,7 +522,7 @@ const LandlordPayments = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center">
+                  <td colSpan={isAdmin ? 5 : 6} className="p-8 text-center">
                     <div className="flex flex-col items-center justify-center">
                       <XCircle className="h-8 w-8 text-muted-foreground mb-2" />
                       <h3 className="text-lg font-medium">No payments found</h3>
@@ -502,52 +540,13 @@ const LandlordPayments = () => {
       
       {/* Payment Details Dialog */}
       {selectedPayment && (
-        <Dialog open={!!selectedPayment} onOpenChange={() => setSelectedPayment(null)}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Payment Details</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="flex justify-between pb-4 border-b">
-                <div>
-                  <h4 className="font-medium">{getTenantName(selectedPayment)}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedPayment.description || `${selectedPayment.type.charAt(0).toUpperCase() + selectedPayment.type.slice(1)} Payment`}
-                  </p>
-                </div>
-                <StatusBadge status={selectedPayment.status} />
-              </div>
-              
-              <div className="grid grid-cols-2 gap-y-4 text-sm">
-                <div>
-                  <div className="font-medium">Payment ID</div>
-                  <div>{selectedPayment.id}</div>
-                </div>
-                <div>
-                  <div className="font-medium">Date</div>
-                  <div>{format(new Date(selectedPayment.date), 'dd MMM yyyy, HH:mm')}</div>
-                </div>
-                <div>
-                  <div className="font-medium">Type</div>
-                  <div className="capitalize">{selectedPayment.type}</div>
-                </div>
-                <div>
-                  <div className="font-medium">Amount</div>
-                  <div className="font-medium text-lg">KES {selectedPayment.amount.toLocaleString()}</div>
-                </div>
-              </div>
-              
-              {selectedPayment.receiptUrl && (
-                <div className="mt-6 pt-4 border-t">
-                  <Button className="w-full">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download Receipt
-                  </Button>
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
+        <PaymentDetailsDialog
+          payment={selectedPayment}
+          open={!!selectedPayment}
+          onOpenChange={() => setSelectedPayment(null)}
+          onRetryVerification={handleRetryVerification}
+          isAdmin={isAdmin}
+        />
       )}
     </div>
   );

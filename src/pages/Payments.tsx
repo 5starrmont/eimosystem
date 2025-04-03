@@ -31,7 +31,7 @@ const Payments = () => {
         {userRole === 'tenant' ? (
           <TenantPayments />
         ) : (
-          <LandlordPayments />
+          <LandlordPayments isAdmin={userRole === 'admin'} />
         )}
       </div>
     </Layout>
