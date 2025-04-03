@@ -1,9 +1,7 @@
 
 import { format } from "date-fns";
-import { Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import StatusBadge from "@/components/StatusBadge";
 import { Payment } from "@/utils/types";
+import StatusBadge from "@/components/StatusBadge";
 import {
   Dialog,
   DialogContent,
@@ -54,19 +52,10 @@ const PaymentDetailsDialog = ({
               <div className="capitalize">{payment.type}</div>
             </div>
             <div>
-              <div className="font-medium">Amount</div>
-              <div className="font-medium text-lg">KES {payment.amount.toLocaleString()}</div>
+              <div className="font-medium">Status</div>
+              <div><StatusBadge status={payment.status} /></div>
             </div>
           </div>
-          
-          {payment.receiptUrl && (
-            <div className="mt-6 pt-4 border-t">
-              <Button className="w-full">
-                <Download className="h-4 w-4 mr-2" />
-                Download Receipt
-              </Button>
-            </div>
-          )}
         </div>
       </DialogContent>
     </Dialog>

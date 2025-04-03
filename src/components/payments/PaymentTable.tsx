@@ -1,6 +1,6 @@
 
 import { format } from "date-fns";
-import { Eye, Download, XCircle } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import StatusBadge from "@/components/StatusBadge";
 import { Payment } from "@/utils/types";
@@ -21,9 +21,6 @@ const PaymentTable = ({ payments, onViewDetails }: PaymentTableProps) => {
                 Date
               </th>
               <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                Amount
-              </th>
-              <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
                 Type
               </th>
               <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
@@ -41,9 +38,6 @@ const PaymentTable = ({ payments, onViewDetails }: PaymentTableProps) => {
                   <td className="p-4 align-middle">
                     {format(new Date(payment.date), 'dd MMM yyyy')}
                   </td>
-                  <td className="p-4 align-middle font-medium">
-                    KES {payment.amount.toLocaleString()}
-                  </td>
                   <td className="p-4 align-middle capitalize">
                     {payment.type}
                   </td>
@@ -59,28 +53,16 @@ const PaymentTable = ({ payments, onViewDetails }: PaymentTableProps) => {
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      
-                      {payment.receiptUrl && (
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={() => console.log('Download receipt:', payment.receiptUrl)}
-                        >
-                          <Download className="h-4 w-4" />
-                        </Button>
-                      )}
                     </div>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={5} className="p-8 text-center">
+                <td colSpan={4} className="p-8 text-center">
                   <div className="flex flex-col items-center justify-center">
-                    <XCircle className="h-8 w-8 text-muted-foreground mb-2" />
-                    <h3 className="text-lg font-medium">No payments found</h3>
                     <p className="text-muted-foreground mt-1">
-                      Try adjusting your search
+                      No payments found
                     </p>
                   </div>
                 </td>
