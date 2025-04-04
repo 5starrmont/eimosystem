@@ -6,40 +6,101 @@ import TenantStatsCards from "@/components/dashboard/TenantStatsCards";
 import TenantPaymentsSection from "@/components/dashboard/TenantPaymentsSection";
 import TenantNotificationsSection from "@/components/dashboard/TenantNotificationsSection";
 import TenantMaintenanceSection from "@/components/dashboard/TenantMaintenanceSection";
-import { mockTenants, mockUsers, mockHouses, mockPayments } from "@/utils/mockData";
+import { mockPayments } from "@/utils/mockData";
 import { getUserEmail } from "@/services/authService";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
-// Mock function to fetch tenant dashboard data
+// Fetch tenant dashboard data from Supabase instead of mock data
 const fetchTenantDashboardData = async () => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  // Get the current tenant's email from localStorage
-  const tenantEmail = getUserEmail();
-  
-  // Find the tenant based on email
-  const tenantUser = mockUsers.find(user => user.email === tenantEmail);
-  const tenant = mockTenants.find(t => t.userId === tenantUser?.id);
-  const house = tenant ? mockHouses.find(h => h.id === tenant.houseId) : null;
-  const payments = tenant 
-    ? mockPayments.filter(p => p.tenantId === tenant.id)
-    : [];
-  
-  // Calculate payment history stats
-  const completedPayments = payments.filter(p => p.status === 'completed');
-  const onTimePaymentsCount = completedPayments.length;
-  
-  return {
-    tenant,
-    house,
-    payments,
-    stats: {
-      currentRent: house?.monthlyRent || 0,
-      waterBillBalance: tenant?.waterBillBalance || 0,
-      paymentsOnTime: onTimePaymentsCount,
-      nextRentDue: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)
+  try {
+    // Get the current tenant's email from localStorage
+    const tenantEmail = getUserEmail();
+    if (!tenantEmail) {
+      throw new Error("User email not found");
     }
-  };
+    
+    // First get the user data
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("id, full_name, email")
+      .eq("email", tenantEmail)
+      .single();
+    
+    if (userError) throw userError;
+    if (!userData) throw new Error("User not found");
+    
+    // Then get the tenant data
+    const { data: tenantData, error: tenantError } = await supabase
+      .from("tenants")
+      .select(`
+        id, 
+        status, 
+        move_in_date,
+        house_id
+      `)
+      .eq("user_id", userData.id)
+      .single();
+    
+    if (tenantError) throw tenantError;
+    if (!tenantData) throw new Error("Tenant record not found");
+    
+    // Get house data
+    const { data: houseData, error: houseError } = await supabase
+      .from("houses")
+      .select("id, house_number, rent_amount, status")
+      .eq("id", tenantData.house_id)
+      .single();
+    
+    if (houseError) throw houseError;
+    if (!houseData) throw new Error("House not found");
+    
+    // Get payments data
+    const { data: paymentsData, error: paymentsError } = await supabase
+      .from("payments")
+      .select("*")
+      .eq("tenant_id", tenantData.id)
+      .order("payment_date", { ascending: false });
+    
+    if (paymentsError) throw paymentsError;
+    
+    // Calculate payment history stats
+    const completedPayments = paymentsData ? 
+      paymentsData.filter(p => p.status === 'completed') : [];
+    const onTimePaymentsCount = completedPayments.length;
+    
+    // For now, use mock payments until we have actual payment data
+    const payments = paymentsData && paymentsData.length > 0 ? 
+      paymentsData : mockPayments.slice(0, 3);
+    
+    // Calculate water bill balance (pending implementation)
+    // For now use a mock value
+    const waterBillBalance = 500;
+    
+    return {
+      user: userData,
+      tenant: tenantData,
+      house: {
+        ...houseData,
+        name: `House ${houseData.house_number}` // Create a display name from house number
+      },
+      payments,
+      stats: {
+        currentRent: houseData.rent_amount || 0,
+        waterBillBalance: waterBillBalance,
+        paymentsOnTime: onTimePaymentsCount,
+        nextRentDue: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)
+      }
+    };
+  } catch (error: any) {
+    console.error("Error fetching tenant dashboard data:", error);
+    toast({
+      title: "Error loading dashboard",
+      description: error.message || "Failed to load dashboard data",
+      variant: "destructive",
+    });
+    throw error;
+  }
 };
 
 const TenantDashboard = () => {
@@ -61,10 +122,8 @@ const TenantDashboard = () => {
     );
   }
 
-  // Get tenant's name to display in welcome message
-  const tenantEmail = getUserEmail();
-  const tenantUser = mockUsers.find(user => user.email === tenantEmail);
-  const tenantName = tenantUser?.name || "Tenant";
+  // Extract tenant's name and house information
+  const tenantName = dashboardData?.user?.full_name || "Tenant";
   const houseName = dashboardData?.house?.name || "";
 
   return (

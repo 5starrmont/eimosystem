@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -6,18 +7,11 @@ export interface LoginCredentials {
   password: string;
 }
 
-// Updated DEMO_ACCOUNTS to include new tenant accounts
+// Demo accounts for quick access
 const DEMO_ACCOUNTS = [
   { email: 'landlord@eimoinvestments.com', role: 'landlord' },
   { email: 'caretaker@eimoinvestments.com', role: 'caretaker' },
-  { email: 'admin@eimoinvestments.com', role: 'admin' },
-  // New tenant accounts
-  { email: 'tenant@eimoinvestments.com', role: 'tenant' },
-  { email: 'sarah.johnson@example.com', role: 'tenant' },
-  { email: 'michael.chen@example.com', role: 'tenant' },
-  { email: 'jennifer.lopez@example.com', role: 'tenant' },
-  { email: 'david.williams@example.com', role: 'tenant' },
-  { email: 'maria.garcia@example.com', role: 'tenant' }
+  { email: 'admin@eimoinvestments.com', role: 'admin' }
 ];
 
 export async function signIn({ email, password }: LoginCredentials) {
@@ -29,7 +23,7 @@ export async function signIn({ email, password }: LoginCredentials) {
     
     if (isDemoAccount && password === 'password') {
       console.log("Using demo login for:", email);
-      // For demo purposes, just extract role from email and set up mock session
+      // For demo purposes, extract role from email and set up mock session
       const role = DEMO_ACCOUNTS.find(account => account.email === email)?.role || 'tenant';
       
       // Store the role in localStorage
@@ -57,7 +51,58 @@ export async function signIn({ email, password }: LoginCredentials) {
       };
     }
     
-    // If not a demo account or incorrect demo password, try actual Supabase auth
+    // If not a demo account - check the database for actual tenant users
+    // First check if the email exists in our users table
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .select("id, email, role, full_name")
+      .eq("email", email)
+      .single();
+      
+    if (userData) {
+      console.log("Found user in database:", userData);
+      
+      // For simplicity in this demo app, we'll use a fixed password "tenant123" for all tenant accounts
+      if (password === "tenant123") {
+        // Store role and email in localStorage
+        localStorage.setItem('userRole', userData.role);
+        localStorage.setItem('userEmail', userData.email);
+        
+        // Create user session
+        const user = {
+          id: userData.id,
+          email: userData.email,
+          user_metadata: { 
+            role: userData.role,
+            full_name: userData.full_name
+          }
+        };
+        
+        toast({
+          title: "Login successful",
+          description: `Welcome to your ${userData.role} dashboard!`,
+        });
+        
+        return {
+          user,
+          session: { user },
+          error: null
+        };
+      } else {
+        toast({
+          title: "Login failed",
+          description: "Incorrect password for tenant account. Use 'tenant123'",
+          variant: "destructive",
+        });
+        return { 
+          user: null, 
+          session: null, 
+          error: { message: "Invalid password" } 
+        };
+      }
+    }
+    
+    // If still not found, try actual Supabase auth
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -107,7 +152,7 @@ export async function signOut() {
       
       toast({
         title: "Signed out",
-        description: "You have been signed out from the demo account",
+        description: "You have been signed out from the account",
       });
       
       return { error: null };
@@ -147,7 +192,7 @@ export async function getUserRole() {
   try {
     console.log("Fetching user role");
     
-    // First check localStorage for demo accounts
+    // First check localStorage for demo accounts and tenant accounts
     const storedRole = localStorage.getItem('userRole');
     if (storedRole) {
       console.log("Found role in localStorage:", storedRole);
@@ -164,8 +209,20 @@ export async function getUserRole() {
     
     console.log("User email for role check:", user.email);
     
-    // For demo purposes - check if email contains role indicators
-    // In a real app, you would query a profiles or roles table
+    // Check in our users table
+    if (user.email) {
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("role")
+        .eq("email", user.email)
+        .single();
+        
+      if (!userError && userData) {
+        return userData.role;
+      }
+    }
+    
+    // Fallback check based on email patterns
     if (user.email?.includes('tenant')) {
       return 'tenant';
     } else if (user.email?.includes('caretaker')) {
@@ -181,7 +238,7 @@ export async function getUserRole() {
   }
 }
 
-// New function to get tenant's email
+// Get tenant's email
 export function getUserEmail() {
   return localStorage.getItem('userEmail') || null;
 }
