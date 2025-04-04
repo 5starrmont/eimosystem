@@ -2,12 +2,14 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import { getUserRole } from "@/services/authService";
+import { getUserRole, getUserEmail } from "@/services/authService";
+import { mockUsers } from "@/utils/mockData";
 
 interface AuthContextProps {
   session: Session | null;
   user: User | null;
   userRole: string | null;
+  userEmail: string | null;
   isLoading: boolean;
 }
 
@@ -15,6 +17,7 @@ const AuthContext = createContext<AuthContextProps>({
   session: null,
   user: null,
   userRole: null,
+  userEmail: null,
   isLoading: true,
 });
 
@@ -22,22 +25,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Handle demo login first
     const storedRole = localStorage.getItem('userRole');
+    const storedEmail = localStorage.getItem('userEmail');
+    
     if (storedRole) {
       // Mock data for demo login
       const mockUser = {
         id: `demo-user-${Date.now()}`,
-        email: `${storedRole}@eimoinvestments.com`,
+        email: storedEmail || `${storedRole}@eimoinvestments.com`,
         role: storedRole
       } as any;
       
       setSession({ user: mockUser } as any);
       setUser(mockUser);
       setUserRole(storedRole);
+      setUserEmail(storedEmail);
       setIsLoading(false);
       return;
     }
@@ -118,6 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         user,
         userRole,
+        userEmail,
         isLoading,
       }}
     >

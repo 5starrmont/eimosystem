@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { mockPayments, mockTenants, mockUsers } from "@/utils/mockData";
 import { Payment } from "@/utils/types";
@@ -8,6 +7,7 @@ import PaymentSearch from "./PaymentSearch";
 import PaymentTable from "./PaymentTable";
 import PaymentDetailsDialog from "./PaymentDetailsDialog";
 import MakePaymentDialog from "./MakePaymentDialog";
+import { getUserEmail } from "@/services/authService";
 
 const TenantPayments = () => {
   const { toast } = useToast();
@@ -15,8 +15,11 @@ const TenantPayments = () => {
   const [selectedPayment, setSelectedPayment] = useState<Payment | null>(null);
   const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
   
+  // Get tenant email
+  const tenantEmail = getUserEmail();
+  
   // Filter payments for the current tenant
-  const tenantUser = mockUsers.find(user => user.role === 'tenant');
+  const tenantUser = mockUsers.find(user => user.email === tenantEmail);
   const tenant = mockTenants.find(t => t.userId === tenantUser?.id);
   const tenantPayments = mockPayments.filter(p => p.tenantId === tenant?.id);
   
@@ -30,9 +33,9 @@ const TenantPayments = () => {
     .filter(p => p.status === 'pending')
     .reduce((sum, p) => sum + p.amount, 0);
   
-  // Mock data for current bills
-  const currentRent = 25000;
-  const currentWaterBill = 1200;
+  // Get current rent and water bill from tenant data
+  const currentRent = tenant?.rentBalance || 25000;
+  const currentWaterBill = tenant?.waterBillBalance || 1200;
   const totalCurrentBill = currentRent + currentWaterBill;
   
   // Filtered payments based on search

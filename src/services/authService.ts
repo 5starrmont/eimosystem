@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -35,6 +34,9 @@ export async function signIn({ email, password }: LoginCredentials) {
       
       // Store the role in localStorage
       localStorage.setItem('userRole', role);
+      
+      // Store the email to identify specific tenant
+      localStorage.setItem('userEmail', email);
       
       // Create mock user and session
       const mockUser = {
@@ -101,6 +103,7 @@ export async function signOut() {
     if (isDemo) {
       // For demo logins, just clear localStorage
       localStorage.removeItem('userRole');
+      localStorage.removeItem('userEmail');
       
       toast({
         title: "Signed out",
@@ -176,4 +179,9 @@ export async function getUserRole() {
     console.error("Error fetching user role:", error);
     return null;
   }
+}
+
+// New function to get tenant's email
+export function getUserEmail() {
+  return localStorage.getItem('userEmail') || null;
 }

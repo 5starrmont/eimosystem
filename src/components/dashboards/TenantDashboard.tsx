@@ -7,14 +7,18 @@ import TenantPaymentsSection from "@/components/dashboard/TenantPaymentsSection"
 import TenantNotificationsSection from "@/components/dashboard/TenantNotificationsSection";
 import TenantMaintenanceSection from "@/components/dashboard/TenantMaintenanceSection";
 import { mockTenants, mockUsers, mockHouses, mockPayments } from "@/utils/mockData";
+import { getUserEmail } from "@/services/authService";
 
 // Mock function to fetch tenant dashboard data
 const fetchTenantDashboardData = async () => {
   // Simulate API call delay
   await new Promise(resolve => setTimeout(resolve, 800));
   
-  // Get the current tenant's data
-  const tenantUser = mockUsers.find(user => user.role === 'tenant');
+  // Get the current tenant's email from localStorage
+  const tenantEmail = getUserEmail();
+  
+  // Find the tenant based on email
+  const tenantUser = mockUsers.find(user => user.email === tenantEmail);
   const tenant = mockTenants.find(t => t.userId === tenantUser?.id);
   const house = tenant ? mockHouses.find(h => h.id === tenant.houseId) : null;
   const payments = tenant 
@@ -57,12 +61,20 @@ const TenantDashboard = () => {
     );
   }
 
+  // Get tenant's name to display in welcome message
+  const tenantEmail = getUserEmail();
+  const tenantUser = mockUsers.find(user => user.email === tenantEmail);
+  const tenantName = tenantUser?.name || "Tenant";
+  const houseNumber = dashboardData?.house?.houseNumber || "";
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Tenant Dashboard</h1>
-          <p className="text-muted-foreground">Welcome to your tenant portal</p>
+          <h1 className="text-3xl font-bold">Welcome, {tenantName}</h1>
+          <p className="text-muted-foreground">
+            {houseNumber ? `House ${houseNumber} Dashboard` : "Tenant Dashboard"}
+          </p>
         </div>
         <div className="mt-4 md:mt-0">
           <p className="text-sm text-muted-foreground">
