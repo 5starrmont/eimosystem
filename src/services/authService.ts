@@ -7,11 +7,18 @@ export interface LoginCredentials {
   password: string;
 }
 
+// Updated DEMO_ACCOUNTS to include new tenant accounts
 const DEMO_ACCOUNTS = [
   { email: 'landlord@eimoinvestments.com', role: 'landlord' },
   { email: 'caretaker@eimoinvestments.com', role: 'caretaker' },
+  { email: 'admin@eimoinvestments.com', role: 'admin' },
+  // New tenant accounts
   { email: 'tenant@eimoinvestments.com', role: 'tenant' },
-  { email: 'admin@eimoinvestments.com', role: 'admin' }
+  { email: 'sarah.johnson@example.com', role: 'tenant' },
+  { email: 'michael.chen@example.com', role: 'tenant' },
+  { email: 'jennifer.lopez@example.com', role: 'tenant' },
+  { email: 'david.williams@example.com', role: 'tenant' },
+  { email: 'maria.garcia@example.com', role: 'tenant' }
 ];
 
 export async function signIn({ email, password }: LoginCredentials) {
