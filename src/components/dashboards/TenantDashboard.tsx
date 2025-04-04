@@ -65,7 +65,7 @@ const TenantDashboard = () => {
   const tenantEmail = getUserEmail();
   const tenantUser = mockUsers.find(user => user.email === tenantEmail);
   const tenantName = tenantUser?.name || "Tenant";
-  const houseNumber = dashboardData?.house?.houseNumber || "";
+  const houseName = dashboardData?.house?.name || "";
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -73,7 +73,7 @@ const TenantDashboard = () => {
         <div>
           <h1 className="text-3xl font-bold">Welcome, {tenantName}</h1>
           <p className="text-muted-foreground">
-            {houseNumber ? `House ${houseNumber} Dashboard` : "Tenant Dashboard"}
+            {houseName ? `${houseName} Dashboard` : "Tenant Dashboard"}
           </p>
         </div>
         <div className="mt-4 md:mt-0">
