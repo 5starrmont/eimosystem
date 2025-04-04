@@ -34,10 +34,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedEmail = localStorage.getItem('userEmail');
     
     if (storedRole) {
+      console.log("Found stored role:", storedRole, "and email:", storedEmail);
+      
       // Mock data for demo login
       const mockUser = {
         id: `demo-user-${Date.now()}`,
-        email: storedEmail || `${storedRole}@eimoinvestments.com`,
+        email: storedEmail,
         role: storedRole
       } as any;
       
@@ -61,20 +63,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setTimeout(async () => {
             try {
               const role = await getUserRole();
-              console.log("User role from service:", role);
-              setUserRole(role);
+              const email = currentSession.user.email;
               
-              // Update localStorage role for compatibility
+              console.log("User role from service:", role);
+              console.log("User email from session:", email);
+              
+              setUserRole(role);
+              setUserEmail(email);
+              
+              // Update localStorage for persistence
               if (role) {
                 localStorage.setItem('userRole', role);
               }
+              
+              if (email) {
+                localStorage.setItem('userEmail', email);
+              }
+              
             } catch (error) {
               console.error("Error getting user role:", error);
             }
           }, 0);
         } else {
           setUserRole(null);
+          setUserEmail(null);
           localStorage.removeItem('userRole');
+          localStorage.removeItem('userEmail');
         }
         
         setIsLoading(false);
@@ -93,12 +107,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (currentSession?.user) {
           try {
             const role = await getUserRole();
-            console.log("Initial user role:", role);
-            setUserRole(role);
+            const email = currentSession.user.email;
             
-            // Update localStorage role for compatibility
+            console.log("Initial user role:", role);
+            console.log("Initial user email:", email);
+            
+            setUserRole(role);
+            setUserEmail(email);
+            
+            // Update localStorage for persistence
             if (role) {
               localStorage.setItem('userRole', role);
+            }
+            
+            if (email) {
+              localStorage.setItem('userEmail', email);
             }
           } catch (error) {
             console.error("Error getting initial user role:", error);

@@ -142,23 +142,11 @@ export async function signOut() {
   try {
     console.log("Attempting to sign out");
     
-    // Check if this is a demo login by looking for userRole in localStorage
-    const isDemo = localStorage.getItem('userRole') !== null;
+    // Clear all authentication data from localStorage regardless of login type
+    localStorage.removeItem('userRole');
+    localStorage.removeItem('userEmail');
     
-    if (isDemo) {
-      // For demo logins, just clear localStorage
-      localStorage.removeItem('userRole');
-      localStorage.removeItem('userEmail');
-      
-      toast({
-        title: "Signed out",
-        description: "You have been signed out from the account",
-      });
-      
-      return { error: null };
-    }
-    
-    // For actual Supabase auth
+    // For Supabase auth
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Sign out error:", error.message);

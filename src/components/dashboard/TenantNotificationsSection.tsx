@@ -32,7 +32,13 @@ const TenantNotificationsSection = ({ isLoading }: TenantNotificationsSectionPro
     async function fetchNotifications() {
       try {
         const email = getUserEmail();
-        if (!email) return;
+        console.log("Fetching notifications for email:", email);
+        
+        if (!email) {
+          console.log("No email found, using mock notifications");
+          setNotifications(mockNotifications.slice(0, 4));
+          return;
+        }
         
         // Get the user id first
         const { data: userData, error: userError } = await supabase
@@ -43,8 +49,12 @@ const TenantNotificationsSection = ({ isLoading }: TenantNotificationsSectionPro
           
         if (userError || !userData) {
           console.error("Error fetching user id:", userError);
+          // Fallback to mock data if user not found
+          setNotifications(mockNotifications.slice(0, 4));
           return;
         }
+        
+        console.log("Found user ID:", userData.id);
         
         // Using the in-memory notifications for now until we add them to the database
         // In a real app, we would fetch from the notifications table with user_id filter
@@ -60,6 +70,8 @@ const TenantNotificationsSection = ({ isLoading }: TenantNotificationsSectionPro
         );
       } catch (error) {
         console.error("Error fetching notifications:", error);
+        // Fallback to mock data on error
+        setNotifications(mockNotifications.slice(0, 4));
       } finally {
         setLoading(false);
       }
