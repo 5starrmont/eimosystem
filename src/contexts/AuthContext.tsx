@@ -25,7 +25,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener FIRST
+    // Handle demo login first
+    const storedRole = localStorage.getItem('userRole');
+    if (storedRole) {
+      // Mock data for demo login
+      const mockUser = {
+        id: `demo-user-${Date.now()}`,
+        email: `${storedRole}@eimoinvestments.com`,
+        role: storedRole
+      } as any;
+      
+      setSession({ user: mockUser } as any);
+      setUser(mockUser);
+      setUserRole(storedRole);
+      setIsLoading(false);
+      return;
+    }
+    
+    // Set up auth state listener for real authentication
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
         console.log("Auth state changed:", event);
