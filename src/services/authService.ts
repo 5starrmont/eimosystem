@@ -142,12 +142,15 @@ export async function signOut() {
   try {
     console.log("Attempting to sign out");
     
-    // Clear all authentication data from localStorage regardless of login type
+    // First clear all authentication data from localStorage
+    console.log("Clearing localStorage auth data");
     localStorage.removeItem('userRole');
     localStorage.removeItem('userEmail');
     
-    // For Supabase auth
+    // Then sign out from Supabase
+    console.log("Calling Supabase signOut");
     const { error } = await supabase.auth.signOut();
+    
     if (error) {
       console.error("Sign out error:", error.message);
       toast({
@@ -163,6 +166,9 @@ export async function signOut() {
       title: "Signed out",
       description: "You have been signed out successfully",
     });
+    
+    // Force reload to ensure all auth state is reset
+    window.location.href = '/';
     
     return { error: null };
   } catch (error: any) {

@@ -33,7 +33,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedRole = localStorage.getItem('userRole');
     const storedEmail = localStorage.getItem('userEmail');
     
-    if (storedRole) {
+    if (storedRole && storedEmail) {
       console.log("Found stored role:", storedRole, "and email:", storedEmail);
       
       // Mock data for demo login
