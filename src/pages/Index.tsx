@@ -30,7 +30,8 @@ const Index = () => {
       const { user, error } = await signIn({ email, password });
       
       if (user && !error) {
-        navigate('/dashboard');
+        // Force full page reload so AuthContext picks up the new localStorage values
+        window.location.href = '/dashboard';
       }
     } catch (error) {
       console.error('Login error:', error);
