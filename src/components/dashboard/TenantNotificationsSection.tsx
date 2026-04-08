@@ -1,10 +1,7 @@
 
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bell } from "lucide-react";
 import NotificationCard from "@/components/NotificationCard";
-import { getUserEmail } from "@/services/authService";
-import { supabase } from "@/integrations/supabase/client";
 import { mockNotifications } from "@/utils/mockData";
 
 interface TenantNotificationsSectionProps {
@@ -25,62 +22,7 @@ interface Notification {
 }
 
 const TenantNotificationsSection = ({ isLoading }: TenantNotificationsSectionProps) => {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchNotifications() {
-      try {
-        const email = getUserEmail();
-        console.log("Fetching notifications for email:", email);
-        
-        if (!email) {
-          console.log("No email found, using mock notifications");
-          setNotifications(mockNotifications.slice(0, 4));
-          return;
-        }
-        
-        // Get the user id first
-        const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("id")
-          .eq("email", email)
-          .single();
-          
-        if (userError || !userData) {
-          console.error("Error fetching user id:", userError);
-          // Fallback to mock data if user not found
-          setNotifications(mockNotifications.slice(0, 4));
-          return;
-        }
-        
-        console.log("Found user ID:", userData.id);
-        
-        // Using the in-memory notifications for now until we add them to the database
-        // In a real app, we would fetch from the notifications table with user_id filter
-        setNotifications(
-          mockNotifications
-            .filter(n => {
-              // Try to find user-specific notifications, or use generic tenant ones
-              const userSpecific = n.userId === userData.id;
-              const isGenericTenant = n.userId === '3'; // Our mock tenant ID
-              return userSpecific || isGenericTenant;
-            })
-            .slice(0, 4)
-        );
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-        // Fallback to mock data on error
-        setNotifications(mockNotifications.slice(0, 4));
-      } finally {
-        setLoading(false);
-      }
-    }
-    
-    if (!isLoading) {
-      fetchNotifications();
-    }
-  }, [isLoading]);
+  const notifications = mockNotifications.slice(0, 4);
 
   return (
     <Card>
@@ -92,7 +34,7 @@ const TenantNotificationsSection = ({ isLoading }: TenantNotificationsSectionPro
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {(isLoading || loading) ? (
+          {isLoading ? (
             // Skeleton Loader
             Array(3).fill(0).map((_, i) => (
               <div key={i} className="animate-pulse flex items-start p-4 rounded-lg">
