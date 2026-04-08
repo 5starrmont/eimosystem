@@ -8,7 +8,6 @@ import { toast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { signIn } from '@/services/authService';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -16,33 +15,6 @@ const Index = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [tenantAccounts, setTenantAccounts] = useState<{email: string, name: string}[]>([]);
-  
-  // Fetch tenant accounts from Supabase
-  useEffect(() => {
-    async function fetchTenants() {
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('email, full_name')
-          .eq('role', 'tenant');
-          
-        if (error) {
-          console.error('Error fetching tenant accounts:', error);
-        } else if (data) {
-          setTenantAccounts(data.map(tenant => ({ 
-            email: tenant.email,
-            name: tenant.full_name
-          })));
-        }
-      } catch (error) {
-        console.error('Failed to fetch tenants:', error);
-      }
-    }
-    
-    fetchTenants();
-  }, []);
-  
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
@@ -113,27 +85,6 @@ const Index = () => {
               </div>
             </div>
             
-            {tenantAccounts.length > 0 && (
-              <div className="bg-white/10 p-4 rounded-lg backdrop-blur-sm mt-6">
-                <h3 className="text-xl font-semibold mb-3">Tenant Accounts</h3>
-                <div className="space-y-4">
-                  {tenantAccounts.map((account, index) => (
-                    <div key={index} className="flex items-center">
-                      <span className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center mr-3">
-                        <User className="h-4 w-4" />
-                      </span>
-                      <div>
-                        <p className="font-medium">{account.email}</p>
-                        <p className="text-sm opacity-80">
-                          <span className="bg-white/20 px-2 py-0.5 rounded text-xs mr-2">{account.name}</span>
-                          Use with password: "tenant123"
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -228,27 +179,6 @@ const Index = () => {
               ))}
             </div>
             
-            {tenantAccounts.length > 0 && (
-              <>
-                <h3 className="text-center font-medium mt-4">Tenant Logins</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {tenantAccounts.slice(0, 4).map((account, index) => (
-                    <Button
-                      key={index}
-                      type="button"
-                      variant="outline"
-                      className="text-xs"
-                      onClick={() => {
-                        setEmail(account.email);
-                        setPassword('tenant123');
-                      }}
-                    >
-                      {account.name.split(' ')[0]}
-                    </Button>
-                  ))}
-                </div>
-              </>
-            )}
           </div>
           
           <div className="mt-8 text-center">
