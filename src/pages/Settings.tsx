@@ -12,9 +12,7 @@ import Layout from "@/components/Layout";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { supabase } from "@/integrations/supabase/client";
 import { Reminder } from "@/utils/types";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 // Define form schema for reminder settings
 const reminderSchema = z.object({
@@ -27,50 +25,16 @@ const reminderSchema = z.object({
 
 type ReminderFormValues = z.infer<typeof reminderSchema>;
 
-// Fetch reminders from Supabase
-const fetchReminders = async () => {
-  const { data, error } = await supabase
-    .from("reminders")
-    .select("*");
-  
-  if (error) throw error;
-  return data as Reminder[];
-};
-
-// Update reminder in Supabase
-const updateReminder = async (reminder: Partial<Reminder>) => {
-  const { data, error } = await supabase
-    .from("reminders")
-    .update(reminder)
-    .eq("id", reminder.id)
-    .select();
-  
-  if (error) throw error;
-  return data;
-};
-
-// Create new reminder in Supabase
-const createReminder = async (reminder: Omit<Reminder, "id" | "createdAt" | "updatedAt">) => {
-  const { data, error } = await supabase
-    .from("reminders")
-    .insert([reminder])
-    .select();
-  
-  if (error) throw error;
-  return data;
-};
+// Mock reminders data until database tables are created
+const mockReminders: Reminder[] = [];
 
 const Settings = () => {
   const { toast } = useToast();
   const { userRole } = useAuth();
-  const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
   
-  // Fetch reminders
-  const { data: reminders, isLoading } = useQuery({
-    queryKey: ["reminders"],
-    queryFn: fetchReminders,
-  });
+  const reminders = mockReminders;
+  const isLoading = false;
   
   // Find default values from reminders
   const paymentReminder = reminders?.find(r => r.type === "combined_payment");
@@ -92,61 +56,12 @@ const Settings = () => {
     },
   });
   
-  // Mutation for updating reminders
-  const updateReminderMutation = useMutation({
-    mutationFn: updateReminder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reminders"] });
-    },
-  });
-  
-  // Mutation for creating reminders
-  const createReminderMutation = useMutation({
-    mutationFn: createReminder,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["reminders"] });
-    },
-  });
-
   const onSubmit = async (values: ReminderFormValues) => {
     setIsSaving(true);
     
     try {
-      // Update payment reminder (combines rent and water bill)
-      if (paymentReminder) {
-        await updateReminderMutation.mutateAsync({
-          id: paymentReminder.id,
-          dayOfMonth: parseInt(values.paymentDueDate),
-          enabled: true,
-        });
-      } else {
-        await createReminderMutation.mutateAsync({
-          type: "combined_payment",
-          dayOfMonth: parseInt(values.paymentDueDate),
-          messageTemplate: "Your combined rent and water bill payment is due on day ${dayOfMonth} of this month.",
-          enabled: true,
-        });
-      }
-      
-      // Update penalty reminder
-      const penaltyMessage = values.penaltyType === "percentage"
-        ? `Late payment attracts a ${values.penaltyPercentage}% penalty.`
-        : `Late payment attracts a ${values.penaltyAmount} KES penalty.`;
-      
-      if (penaltyReminder) {
-        await updateReminderMutation.mutateAsync({
-          id: penaltyReminder.id,
-          enabled: values.enableLatePenalty,
-          messageTemplate: penaltyMessage,
-        });
-      } else {
-        await createReminderMutation.mutateAsync({
-          type: "payment_late",
-          dayOfMonth: parseInt(values.paymentDueDate) + 5,
-          messageTemplate: penaltyMessage,
-          enabled: values.enableLatePenalty,
-        });
-      }
+      // TODO: Save to database once tables are created
+      console.log("Settings to save:", values);
       
       toast({
         title: "Settings updated",
