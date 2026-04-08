@@ -51,58 +51,7 @@ export async function signIn({ email, password }: LoginCredentials) {
       };
     }
     
-    // If not a demo account - check the database for actual tenant users
-    // First check if the email exists in our users table
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("id, email, role, full_name")
-      .eq("email", email)
-      .single();
-      
-    if (userData) {
-      console.log("Found user in database:", userData);
-      
-      // For simplicity in this demo app, we'll use a fixed password "tenant123" for all tenant accounts
-      if (password === "tenant123") {
-        // Store role and email in localStorage
-        localStorage.setItem('userRole', userData.role);
-        localStorage.setItem('userEmail', userData.email);
-        
-        // Create user session
-        const user = {
-          id: userData.id,
-          email: userData.email,
-          user_metadata: { 
-            role: userData.role,
-            full_name: userData.full_name
-          }
-        };
-        
-        toast({
-          title: "Login successful",
-          description: `Welcome to your ${userData.role} dashboard!`,
-        });
-        
-        return {
-          user,
-          session: { user },
-          error: null
-        };
-      } else {
-        toast({
-          title: "Login failed",
-          description: "Incorrect password for tenant account. Use 'tenant123'",
-          variant: "destructive",
-        });
-        return { 
-          user: null, 
-          session: null, 
-          error: { message: "Invalid password" } 
-        };
-      }
-    }
-    
-    // If still not found, try actual Supabase auth
+    // Try actual Supabase auth for non-demo accounts
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -203,20 +152,7 @@ export async function getUserRole() {
     
     console.log("User email for role check:", user.email);
     
-    // Check in our users table
-    if (user.email) {
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("role")
-        .eq("email", user.email)
-        .single();
-        
-      if (!userError && userData) {
-        return userData.role;
-      }
-    }
-    
-    // Fallback check based on email patterns
+    // Check based on email patterns
     if (user.email?.includes('tenant')) {
       return 'tenant';
     } else if (user.email?.includes('caretaker')) {
